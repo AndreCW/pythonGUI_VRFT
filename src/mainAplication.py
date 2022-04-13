@@ -123,6 +123,7 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
     
     ## 
     def textCapture(self, chave):
+        valor = ""
         if chave == 1:
             valor = self.textAcom.text()
         elif chave == 2: 
@@ -141,14 +142,15 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             valor = self.input_duty.text()
         elif chave == 9:
             valor = self.input_Vo.text()
-            
-        valor = valor.replace(" ", "")
-        valor = valor.replace("[", "")
-        valor = valor.replace("]", "")
-        lista = valor.split(",")
-        floats = [float(y) for y in lista]
         
-        return floats
+        if (valor != ""):
+            valor = valor.replace(" ", "")
+            valor = valor.replace("[", "")
+            valor = valor.replace("]", "")
+            lista = valor.split(",")
+            floats = [float(y) for y in lista]
+        
+            return floats
     
     ## 
     def customControllerSetter(self, chave):
@@ -205,7 +207,25 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
     ## Botao para gerar o ponto ideal para coleta de dados    
     def pontoIdealPressed(self):
         duty = self.textCapture(8)
+        print(duty)
         v0 = self.textCapture(9)
+        
+        controllerType = self.gPre.checkedId()
+        
+        if controllerType == 15:
+            ideal = v0[0] / duty[0]
+            print(ideal)
+        elif controllerType == 16:
+            ideal = v0[0] / (1 - duty[0])
+            print(ideal)
+        elif controllerType == 17:
+            ideal = v0[0] / (duty[0] * (1 - duty[0]))
+            print(ideal)
+        elif controllerType == 18:
+            ideal = v0[0] / (duty[0] * (1 - duty[0]))
+            print(ideal)
+            
+        self.preOutput.appendPlainText(str(ideal))
     
     ## Botao para aplicar o metodo VRFT
     def VRFTPressed(self):
