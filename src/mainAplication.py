@@ -206,8 +206,6 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
     def pontoIdealPressed(self):
         duty = self.textCapture(8)
         v0 = self.textCapture(9)
-        
-        
     
     ## Botao para aplicar o metodo VRFT
     def VRFTPressed(self):
