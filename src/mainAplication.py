@@ -59,6 +59,17 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         self.gFiltro.setId(self.filtroPadrao, 13)
         self.gFiltro.setId(self.filtroCustom, 14)
         
+        ## Cria grupo de botões 5 - Classe controlador pré projeto
+        self.gPre = QtWidgets.QButtonGroup(MainWindow)
+        self.gPre.addButton(self.bBuck)
+        self.gPre.addButton(self.bBoost)
+        self.gPre.addButton(self.bFlyback)
+        self.gPre.addButton(self.bSepic)
+        self.gPre.setId(self.bBuck, 15)
+        self.gPre.setId(self.bBoost, 16)
+        self.gPre.setId(self.bFlyback, 17)
+        self.gPre.setId(self.bSepic, 18)
+        
         ## Chamada das funções para quando algum botao for pressionado
         self.gTd.buttonClicked.connect(self.TdPressed)
         self.gControlador.buttonClicked.connect(self.CPressed)
@@ -126,6 +137,10 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             valor = self.fTdNum.text()
         elif chave == 7: 
             valor = self.fTdDen.text()
+        elif chave == 8:
+            valor = self.input_duty.text()
+        elif chave == 9:
+            valor = self.input_Vo.text()
             
         valor = valor.replace(" ", "")
         valor = valor.replace("[", "")
@@ -189,7 +204,10 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
     # TODO:    
     ## Botao para gerar o ponto ideal para coleta de dados    
     def pontoIdealPressed(self):
-        pass
+        duty = self.textCapture(8)
+        v0 = self.textCapture(9)
+        
+        
     
     ## Botao para aplicar o metodo VRFT
     def VRFTPressed(self):
