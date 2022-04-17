@@ -11,15 +11,15 @@ import numpy as np  # important package for scientific computing
 from scipy import signal  # signal processing library
 import matplotlib.pyplot as plt  # library to plot graphics
 import vrft  # vrft package
-from  controlsystems import types
+# from  controlsystems import types
 import control.matlab as control
 import math
-import tf
 
 import guiPrincipal
 
 class MyWindow(guiPrincipal.Ui_MainWindow):
     def mySetupUi(self, MainWindow):
+        self.flag = False
         ########################################################################
         ## Cria grupo de botões 1 - classe do conversor
         self.gConversor = QtWidgets.QButtonGroup(MainWindow)
@@ -209,28 +209,28 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
     ## Botao para gerar o ponto ideal para coleta de dados    
     def pontoIdealPressed(self):
         duty = self.textCapture(8)
-        print(duty)
         v0 = self.textCapture(9)
         
         controllerType = self.gPre.checkedId()
         
         if controllerType == 15:
             ideal = v0[0] / duty[0]
-            print(ideal)
         elif controllerType == 16:
             ideal = v0[0] / (1 - duty[0])
-            print(ideal)
         elif controllerType == 17:
             ideal = v0[0] / (duty[0] * (1 - duty[0]))
-            print(ideal)
         elif controllerType == 18:
             ideal = v0[0] / (duty[0] * (1 - duty[0]))
-            print(ideal)
             
-        self.preOutput.appendPlainText(str(ideal))
+        texto = "Ganho estático: " + str(ideal)
+            
+        self.preOutput.appendPlainText(texto)
     
     ## Botao para aplicar o metodo VRFT
     def VRFTPressed(self):
+        self.flag = False
+        
+        
         modelFunc = self.gTd.checkedId()
         
         # TODO: Zero de fase nao minima    
@@ -336,16 +336,15 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             filterNum, filterDen = [1]
             
         elif filterType == 13:  # Filtro Padrão
-            '''
-            L = Td * (1 - Td)
-            '''
-            um = control.tf([1], [1])
-            tTemp = types.TransferFunction(self.tdNum, self.tdDen)
+            # L = Td * (1 - Td)
+            um = control.tf([1], [1], dt=1)
+            tTemp = control.tf(self.tdNum, self.tdDen, dt=1)
             tDesejada = tTemp * (um - tTemp)
             
-            filterNum, filterDen = tDesejada.getNumDen()
-            filterNum = list(filterNum)
-            filterDen = list(filterDen)
+            numL = tDesejada.getNum()
+            filterNum = numL[0][0]
+            denL = tDesejada.getDen()
+            filterDen = denL[0][0]
             
         elif filterType == 14:  # Filtro Custom
             filterNum = self.textCapture(6)
@@ -396,33 +395,35 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             cNum = [i * ganhos[0] for i in pNum]
             self.contNum = cNum
             self.contDen = pDen
+            self.flag = True
             
         elif (k == "pi"):
             ganhos = [resultado[0].item(), resultado[1].item()]
             texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1])
             cNum1 = [i * ganhos[0] for i in pNum]
             cNum2 = [j * ganhos[1] for j in iNum]
-            temp1 = types.TransferFunction(cNum1, pDen)
-            temp2 = types.TransferFunction(cNum2, iDen)
-            temp3 = temp1 + temp2
-            self.contNum, self.contDen = temp3.getNumDen()
-            self.contNum = list(self.contNum)
-            self.contDen = list(self.contDen)
-            
-            teste = types.TransferFunction([1.1, 0.5], [2.4, 2, 3])
-            print(teste)
+            c1 = control.tf(cNum1, pDen, dt=1)
+            c2 = control.tf(cNum2, iDen, dt=1)
+            cFinal = c1 + c2
+            cAux = cFinal.getNum()
+            self.contNum = cAux[0][0]
+            cAux = cFinal.getDen()
+            self.contDen = cAux[0][0]
+            self.flag = True
             
         elif (k == "pd"):
             ganhos = [resultado[0].item(), resultado[1].item()]
             texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKd = " + str(ganhos[1])
             cNum1 = [i * ganhos[0] for i in pNum]
             cNum2 = [i * ganhos[1] for i in dNum]
-            temp1 = types.TransferFunction(cNum1, pDen)
-            temp2 = types.TransferFunction(cNum2, dDen)
-            temp3 = temp1 + temp2
-            self.contNum, self.contDen = temp3.getNumDen()
-            self.contNum = list(self.contNum)
-            self.contDen = list(self.contDen)
+            c1 = control.tf(cNum1, pDen, dt=1)
+            c2 = control.tf(cNum2, dDen, dt=1)
+            cFinal = c1 + c2
+            cAux = cFinal.getNum()
+            self.contNum = cAux[0][0]
+            cAux = cFinal.getDen()
+            self.contDen = cAux[0][0]
+            self.flag = True
             
         elif (k =="pid"):
             ganhos = [resultado[0].item(), resultado[1].item(), resultado[2].item()]
@@ -430,13 +431,15 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             cNum1 = [i * ganhos[0] for i in pNum]
             cNum2 = [i * ganhos[1] for i in iNum]
             cNum3 = [i * ganhos[2] for i in dNum]
-            temp1 = types.TransferFunction(cNum1, pDen)
-            temp2 = types.TransferFunction(cNum2, iDen)
-            temp3 = types.TransferFunction(cNum3, dDen)
-            temp4 = temp1 + temp2 + temp3
-            self.contNum, self.contDen = temp4.getNumDen()
-            self.contNum = list(self.contNum)
-            self.contDen = list(self.contDen)
+            c1 = control.tf(cNum1, pDen, dt=1)
+            c2 = control.tf(cNum2, iDen, dt=1)
+            c3 = control.tf(cNum3, dDen, dt=1)
+            cFinal = c1 + c2 + c3
+            cAux = cFinal.getNum()
+            self.contNum = cAux[0][0]
+            cAux = cFinal.getDen()
+            self.contDen = cAux[0][0]
+            self.flag = True
             
         elif (k == "custom"):
             ganhos = [resultado[x].item() for x in range(numNum)]
@@ -445,6 +448,7 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             for y in range(numNum):
                 textoaux = textoaux + "K" + str(y + 1) + " = " + str(ganhos[y]) + "\n\t"
             texto = texto + textoaux
+            self.flag = True
             
         self.controllerOutput.appendPlainText(texto)
         
@@ -453,66 +457,43 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         filterL = 0
         resultado = 0
 
-    # TODO:
     ## Botao para gerar o grafico de T(z)
     def graphTzPressed(self):
-        # num = self.dfEnsaio.shape[0]
         
-        # dfEnsaioCopia = self.dfEnsaio.copy()
-        
-        # entradaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-        # saidaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-        
-        # entradaEnsaio = np.ones((num, 1))
-        # saidaEnsaio = np.ones((num, 1))
-        
-        # for x in range(0, num):
-        #     entradaEnsaio[x] = entradaTemp[x]
-        #     saidaEnsaio[x] = saidaTemp[x]
-        
-        # # t = np.arange(0.0, 2.0, 0.01)
-        # # s = 1 + np.sin(2 * np.pi * t)
-        
-        # print(entradaEnsaio)
-        # print(saidaEnsaio)
-        
-        # fig = plt.subplot()
-        # fig.plot(saidaEnsaio)
-        # fig.set(xlabel='time (samples)', ylabel='voltage (mV)', title='About')
-        # fig.grid()
-        
-        # plt.show()
+        # TODO:
+        if self.ensaioMFText.text() != '':
+            num = self.dfEnsaioMF.shape[0]
+            
+            dfEnsaioMFCopia = self.dfEnsaioMF.copy()
+            
+            entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+            saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+            
+            entradaMFTemp = np.ones((num, 1))
+            saidaMFTemp = np.ones((num, 1))
+            
+            for x in range(0, num):
+                entradaEnsaioMF[x] = entradaMFTemp[x]
+                saidaEnsaioMF[x] = saidaMFTemp[x]
+            
+            # t = np.arange(0.0, 2.0, 0.01)
+            # s = 1 + np.sin(2 * np.pi * t)
+            
+            print(entradaEnsaioMF)
+            print(saidaEnsaioMF)
+            
+            fig = plt.subplot()
+            fig.plot(saidaEnsaioMF)
+            fig.set(xlabel='time (samples)', ylabel='voltage (mV)', title='About')
+            fig.grid()
+            
+            plt.show()
         
         # G = signal.TransferFunction([1], [1, -0.9], dt=1)
 
-        # tTemp = types.TransferFunction(self.tdNum, self.tdDen)
+        # tTemp = control.tf(self.tdNum, self.tdDen)
         Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
         controladorProjetado = signal.TransferFunction(self.contNum, self.contDen, dt=1)
-        
-        cProj = types.TransferFunction(self.contNum, self.contDen)
-        tdEsperado = types.TransferFunction(self.tdNum, self.tdDen)
-        
-        
-        
-        texto = cProj.__str__()
-        print(texto)
-        
-        '''
-        T = C * G / (1 + C * G)
-        G = T / (C - T * C)
-        '''
-
-        # # kp = 0.16291255    # Com Ruido
-        # # kp = 0.18          # Sem Ruido
-
-        # # ki = 0.02161134    # Com Ruido
-        # # ki = 0.02          # Sem Ruido
-
-        # num = [1.8452389, -1.6291255]     # Com Ruido
-        # den = [1, -1.81547611, 0.83708745]  # Com Ruido
-        # # num = [0.2, -0.18]                 # Sem Ruido
-        # # den = [1, -1.8, 0.82]              # Sem Ruido
-        # T = signal.TransferFunction(num, den, dt=1)
 
         N = 100
 
@@ -525,14 +506,6 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         # yt = vrft.filter(T, u)
         yc = vrft.filter(controladorProjetado, u)
 
-        # sigma2_e1 = 0.1
-        # w = np.random.normal(0, np.sqrt(sigma2_e1), N)
-        # w.shape = (N, 1)
-
-        # yg = yg + w
-        # yd = 10*yd + w
-        # yt = yt + w
-
         lw = 1.5 # linewidth
 
         # # plot output signal
@@ -542,20 +515,23 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         # plt.xlabel("time (samples)")
         # plt.ylabel("yg(t)")
         # plt.xlim(left=-2, right=N)
+        # plt.legend()
 
         plt.figure()
-        plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="u(t)")
+        plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="u1(t)")
         plt.grid(True)
         plt.xlabel("time (samples)")
         plt.ylabel("ytd(t)")
         plt.xlim(left=-2, right=N)
+        plt.legend()
         
-        plt.figure()
-        plt.plot(yc, "b", drawstyle="steps", linewidth=lw, label="u(t)")
-        plt.grid(True)
-        plt.xlabel("time (samples)")
-        plt.ylabel("c(t)")
-        plt.xlim(left=-2, right=N)
+        # plt.figure()
+        # plt.plot(yc, "b", drawstyle="steps", linewidth=lw, label="u(t)")
+        # plt.grid(True)
+        # plt.xlabel("time (samples)")
+        # plt.ylabel("c(t)")
+        # plt.xlim(left=-2, right=N)
+        # plt.legend()
 
         # plt.figure()
         # plt.plot(yt, "b", drawstyle="steps", linewidth=lw, label="u(t)")
@@ -563,6 +539,7 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         # plt.xlabel("time (samples)")
         # plt.ylabel("yt(t)")
         # plt.xlim(left=-2, right=N)
+        # plt.legend()
 
         plt.show()
     
@@ -574,7 +551,25 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
     # TODO:
     ## Botao para calcular a sensibilidade
     def sensiPressed(self):
-        pass
+        
+        if self.flag == True:
+            '''
+            T = C * G / (1 + C * G)
+            G = T / (C - T * C)
+            '''
+            
+            tdEsperado = control.tf(self.tdNum, self.tdDen, dt=1)
+        
+            cProj = control.tf(self.contNum, self.contDen, dt=1)
+            
+            
+            G = tdEsperado / (cProj - (tdEsperado * cProj))
+            
+            sensi = 1 / (1 + G * cProj)
+            
+            texto = "Sensibilidade estimada da planta: " + sensi.__str__()
+            texto = texto[:-7]
+            self.MFOutput.appendPlainText(texto)
     
     ######
     ## Trabalho com a caixa de texto output:
