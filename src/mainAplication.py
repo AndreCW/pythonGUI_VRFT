@@ -11,7 +11,6 @@ import numpy as np  # important package for scientific computing
 from scipy import signal  # signal processing library
 import matplotlib.pyplot as plt  # library to plot graphics
 import vrft  # vrft package
-# from  controlsystems import types
 import control.matlab as control
 import math
 
@@ -222,9 +221,11 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         elif controllerType == 18:
             ideal = v0[0] / (duty[0] * (1 - duty[0]))
             
-        texto = "Ganho estático: " + str(ideal)
+        ideal = 1 / ideal
             
-        self.preOutput.appendPlainText(texto)
+        texto = "Ganho estático máximo: " + str(ideal) + " [V<sup>-1</sup>]"
+            
+        self.preOutput.append(texto)
     
     ## Botao para aplicar o metodo VRFT
     def VRFTPressed(self):
@@ -241,10 +242,13 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             speed = self.textCapture(2)
             freq = self.textCapture(3)
             
+            if freq[0] == 10000:
+                freq[0] = 9999
+            
             p1 = math.exp(-(4 / freq[0]) / (tso[0] * math.pow(10, -3) * (1 - 0.01 * speed[0])))
             p2 = 10 * p1
             
-            k0 = 1 * (1 - p1) * (1 - p2)
+            k0 = abs(1 * (1 - p1) * (1 - p2))
             
             self.tdNum = [k0]
             self.tdDen = [1, -2*p1*p2, p1*p2]
@@ -258,6 +262,7 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             texto = "Modelo de referência invalido"
             self.controllerOutput.appendPlainText(texto)
         
+        td = control.tf(self.tdNum, self.tdDen)
         objectiveFunction = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
         
         
@@ -333,7 +338,8 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         filterType = self.gFiltro.checkedId()
         
         if filterType == 12:    # Sem Filtro
-            filterNum, filterDen = [1]
+            filterNum = [1]
+            filterDen = [1]
             
         elif filterType == 13:  # Filtro Padrão
             # L = Td * (1 - Td)
@@ -459,9 +465,28 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
 
     ## Botao para gerar o grafico de T(z)
     def graphTzPressed(self):
+        N = 100
+        lw = 1.5 # linewidth
+        flag = False
         
+        if self.flag == True:
+            flag = True
+            Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
+
+            # # step signal
+            u = np.ones((N, 1))
+            u[0] = 0
+
+            yd = vrft.filter(Td, u)
+
+
+            # plot da resposta ao salto para o sinal da Td desejada
+            plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="Td_Desejada")
+        
+
         # TODO:
         if self.ensaioMFText.text() != '':
+            flag = True
             num = self.dfEnsaioMF.shape[0]
             
             dfEnsaioMFCopia = self.dfEnsaioMF.copy()
@@ -469,79 +494,28 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
             saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
             
-            entradaMFTemp = np.ones((num, 1))
-            saidaMFTemp = np.ones((num, 1))
+            entradaEnsaioMF = np.ones((num, 1))
+            saidaEnsaioMF = np.ones((num, 1))
             
             for x in range(0, num):
                 entradaEnsaioMF[x] = entradaMFTemp[x]
                 saidaEnsaioMF[x] = saidaMFTemp[x]
+                
+            inputMax = np.amax(saidaEnsaioMF)
             
-            # t = np.arange(0.0, 2.0, 0.01)
-            # s = 1 + np.sin(2 * np.pi * t)
-            
-            print(entradaEnsaioMF)
-            print(saidaEnsaioMF)
-            
-            fig = plt.subplot()
-            fig.plot(saidaEnsaioMF)
-            fig.set(xlabel='time (samples)', ylabel='voltage (mV)', title='About')
-            fig.grid()
-            
+            for y in range(0, num):
+                saidaEnsaioMF[y] = saidaEnsaioMF[y] / inputMax
+                
+            plt.plot(saidaEnsaioMF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
+        
+        
+        if flag == True:
+            plt.grid(True)
+            plt.xlabel("time (samples)")
+            plt.ylabel("Td")
+            plt.xlim(left=-2, right=N)
+            plt.legend()
             plt.show()
-        
-        # G = signal.TransferFunction([1], [1, -0.9], dt=1)
-
-        # tTemp = control.tf(self.tdNum, self.tdDen)
-        Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
-        controladorProjetado = signal.TransferFunction(self.contNum, self.contDen, dt=1)
-
-        N = 100
-
-        # # step signal
-        u = np.ones((N, 1))
-        u[0] = 0
-
-        # yg = vrft.filter(G, u)
-        yd = vrft.filter(Td, u)
-        # yt = vrft.filter(T, u)
-        yc = vrft.filter(controladorProjetado, u)
-
-        lw = 1.5 # linewidth
-
-        # # plot output signal
-        # plt.figure()
-        # plt.plot(yg, "b", drawstyle="steps", linewidth=lw, label="u(t)")
-        # plt.grid(True)
-        # plt.xlabel("time (samples)")
-        # plt.ylabel("yg(t)")
-        # plt.xlim(left=-2, right=N)
-        # plt.legend()
-
-        plt.figure()
-        plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="u1(t)")
-        plt.grid(True)
-        plt.xlabel("time (samples)")
-        plt.ylabel("ytd(t)")
-        plt.xlim(left=-2, right=N)
-        plt.legend()
-        
-        # plt.figure()
-        # plt.plot(yc, "b", drawstyle="steps", linewidth=lw, label="u(t)")
-        # plt.grid(True)
-        # plt.xlabel("time (samples)")
-        # plt.ylabel("c(t)")
-        # plt.xlim(left=-2, right=N)
-        # plt.legend()
-
-        # plt.figure()
-        # plt.plot(yt, "b", drawstyle="steps", linewidth=lw, label="u(t)")
-        # plt.grid(True)
-        # plt.xlabel("time (samples)")
-        # plt.ylabel("yt(t)")
-        # plt.xlim(left=-2, right=N)
-        # plt.legend()
-
-        plt.show()
     
     # TODO:
     ## Botao para gerar o custo JVR
@@ -562,14 +536,72 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         
             cProj = control.tf(self.contNum, self.contDen, dt=1)
             
-            
             G = tdEsperado / (cProj - (tdEsperado * cProj))
             
             sensi = 1 / (1 + G * cProj)
             
-            texto = "Sensibilidade estimada da planta: " + sensi.__str__()
-            texto = texto[:-7]
+            x = sensi.getNum()
+            x = list(x[0][0])
+            y = sensi.getDen()
+            y = list(y[0][0])
+
+            z, p, k = control.tf2zpk(x, y)
+            print(p)
+
+            tam1 = z.shape[0]
+            
+            texto = "Sensibilidade estimada da planta: "
             self.MFOutput.appendPlainText(texto)
+            
+            listaK = [str(k)]
+
+            texto = [str(k)]
+
+            for i in range(tam1):
+                redondo = np.round(z[i], 5)
+                if "j" in str(redondo):
+                    aux = "(z - " + str(redondo)[1:-1] + ")"
+                else:
+                    aux = "(z - " + str(redondo) + ")"
+                texto.append(aux)
+            
+            texto = ''.join(texto)
+            
+            length = len(texto)
+
+            self.MFOutput.appendPlainText(texto)
+
+            linha = []
+            for i in range(length):
+                if i < len(str(k)):
+                    linha.append(" ")
+                else:
+                    linha.append("-")
+                    
+            linha = ''.join(linha)
+
+            self.MFOutput.appendPlainText(linha)
+
+            tam2 = p.shape[0]
+
+            texto = ["  "]
+
+            for j in range(tam2):
+                redondo = np.round(p[j], 5)
+                if "j" in str(redondo):
+                    aux = "(z - " + str(redondo)[1:-1] + ")"
+                else:
+                    aux = "(z - " + str(redondo) + ")"
+                texto.append(aux)
+                
+            texto = ''.join(texto)
+
+            self.MFOutput.appendPlainText(texto)
+        
+        else:
+            texto = "Aplicar o método VRFT primeiro."
+            self.MFOutput.appendPlainText(texto)
+            
     
     ######
     ## Trabalho com a caixa de texto output:

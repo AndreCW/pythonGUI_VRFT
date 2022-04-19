@@ -29,7 +29,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>2</number>
     </property>
     <property name="iconSize">
      <size>
@@ -251,26 +251,7 @@
        <string>Gerar Ponto Ideal</string>
       </property>
      </widget>
-     <widget class="QPlainTextEdit" name="preOutput">
-      <property name="geometry">
-       <rect>
-        <x>40</x>
-        <y>500</y>
-        <width>781</width>
-        <height>111</height>
-       </rect>
-      </property>
-      <property name="layoutDirection">
-       <enum>Qt::RightToLeft</enum>
-      </property>
-      <property name="readOnly">
-       <bool>true</bool>
-      </property>
-      <property name="plainText">
-       <string/>
-      </property>
-     </widget>
-     <widget class="QWidget" name="">
+     <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
         <x>530</x>
@@ -359,6 +340,22 @@
         </widget>
        </item>
       </layout>
+     </widget>
+     <widget class="QTextEdit" name="preOutput">
+      <property name="geometry">
+       <rect>
+        <x>40</x>
+        <y>500</y>
+        <width>781</width>
+        <height>111</height>
+       </rect>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::RightToLeft</enum>
+      </property>
+      <property name="readOnly">
+       <bool>true</bool>
+      </property>
      </widget>
     </widget>
     <widget class="QWidget" name="tab_2">
@@ -1347,9 +1344,9 @@
      <widget class="QLabel" name="label_9">
       <property name="geometry">
        <rect>
-        <x>340</x>
+        <x>260</x>
         <y>60</y>
-        <width>241</width>
+        <width>421</width>
         <height>31</height>
        </rect>
       </property>
@@ -1359,7 +1356,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Dados da Malha Fechada</string>
+       <string>Dados de resposta ao salto em Malha Fechada</string>
       </property>
      </widget>
      <widget class="Line" name="line_7">
@@ -1487,6 +1484,9 @@
       </property>
       <property name="plainText">
        <string/>
+      </property>
+      <property name="tabStopWidth">
+       <number>100</number>
       </property>
      </widget>
     </widget>
