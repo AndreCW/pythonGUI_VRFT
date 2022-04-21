@@ -4,3 +4,11 @@ TestTools/window.py
 .vscode/launch.json
 src/output.py
 src/tdPadraoPolos.xlsx
+Datasets/Data_openloop.xlsx
+Datasets/Data_closedloop.xlsx
+Datasets/Data_openloop.csv
+Datasets/Data_closedloop.csv
+Diss_Guilherme_Salati.pdf
+Data_openloop.csv
+Data_closedloop.csv
+src/~$tdPadraoPolos.xlsx
