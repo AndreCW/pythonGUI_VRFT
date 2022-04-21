@@ -231,262 +231,292 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
     def VRFTPressed(self):
         self.flag = False
         
+        if self.ensaioText.text() != '':
         
-        modelFunc = self.gTd.checkedId()
-        
-        # TODO: Zero de fase nao minima    
-        # zeroFNM = check ZFNM button
-        
-        if modelFunc == 5:
-            tso = self.textCapture(1)
-            speed = self.textCapture(2)
-            freq = self.textCapture(3)
+            modelFunc = self.gTd.checkedId()
             
-            if freq[0] == 10000:
-                freq[0] = 9999
+            # TODO: Zero de fase nao minima    
+            # zeroFNM = check ZFNM button
             
-            p1 = math.exp(-(4 / freq[0]) / (tso[0] * math.pow(10, -3) * (1 - 0.01 * speed[0])))
-            p2 = 10 * p1
-            
-            k0 = abs(1 * (1 - p1) * (1 - p2))
-            
-            self.tdNum = [k0]
-            self.tdDen = [1, -2*p1*p2, p1*p2]
-            
-        elif modelFunc == 6:
-            self.tdNum = self.textCapture(4)
-            self.tdDen = self.textCapture(5)
-            
-        elif modelFunc == -1:
-            # TODO: Error flag
-            texto = "Modelo de referência invalido"
-            self.controllerOutput.appendPlainText(texto)
-        
-        td = control.tf(self.tdNum, self.tdDen)
-        objectiveFunction = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
-        
-        
-        # Conforme selecao do usuario, seta o tipo de controlador
-        controlClass = self.gControlador.checkedId()
-        
-        pNum = [1]
-        pDen = [1]
-        
-        iNum = [1, 0]
-        iDen = [1, -1]
-        
-        dNum = [1, -1]
-        dDen = [1, 0]
-        
-        if controlClass == 7:                                                               # Proporcional
-            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)]]                       # Kp
-            k = "p"
-            
-        elif controlClass == 8:                                                             # Proporcional Integral
-            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
-                               [signal.TransferFunction(iNum, iDen, dt=1)],]                      # Ki
-            k = "pi"
-            
-        elif controlClass == 9:                                                             # Proporcional Derivativo
-            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
-                               [signal.TransferFunction(dNum, dDen, dt=1)],]                      # Kd
-            k = "pd"
-            
-        elif controlClass == 10:                                                            # Proporcional Integral Derivativo
-            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
-                               [signal.TransferFunction(iNum, iDen, dt=1)],                       # Ki
-                               [signal.TransferFunction(dNum, dDen, dt=1)],]                      # Kd
-            k = "pid"
-            
-        elif controlClass == 11:                                                            # Custom
-            controllerNumTemp, numNum = self.customControllerSetter(0)
-            controllerDenTemp, numDen = self.customControllerSetter(1)
-            # TODO: flag que impede sequencia se o len de cada for diferente
-            
-            contNum = len(controllerNumTemp)
-            contDen = len(controllerDenTemp)
-            temp = contNum + contDen
-            
-            contador, i, j = 0, 0, 0
-            controllerTemp = []
-            
-            while (contador < temp):
-                if (contador % 2) == 0:
-                    controllerTemp.append(controllerDenTemp[i])
-                    i += 1
-                else:
-                    controllerTemp.append(controllerNumTemp[j])
-                    j += 1
-                contador += 1
-
-            controllerModel = []
-            contador = 0
-            
-            while (contador < len(controllerTemp)):
-                controllerModel.append([signal.TransferFunction(controllerTemp[contador], controllerTemp[contador + 1], dt=1)])
-                contador += 2
+            if modelFunc == 5:
+                tso = self.textCapture(1)
+                speed = self.textCapture(2)
+                freq = self.textCapture(3)
                 
-            k = "custom"
+                p1 = math.exp(-(4 / freq[0]) / (tso[0] * 10**-3 * (1 - 0.01 * speed[0])))
+                
+                '''
+                Td para caso não flexível
+                Td = (1 - p1) / (z - p1)
+                '''
+                self.tdNum = [1 - p1]
+                self.tdDen = [1, -p1]
+                
+            elif modelFunc == 6:
+                self.tdNum = self.textCapture(4)
+                self.tdDen = self.textCapture(5)
+                
+            elif modelFunc == -1:
+                # TODO: Error flag
+                texto = "Modelo de referência invalido"
+                self.controllerOutput.appendPlainText(texto)
             
-        elif controlClass == -1:
-            # TODO: Error flag
-            texto = "Modelo do controlador invalido"
+            objectiveFunction = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
+            
+            
+            # Conforme selecao do usuario, seta o tipo de controlador
+            controlClass = self.gControlador.checkedId()
+            
+            pNum = [1]
+            pDen = [1]
+            
+            iNum = [1, 0]
+            iDen = [1, -1]
+            
+            dNum = [1, -1]
+            dDen = [1, 0]
+            
+            if controlClass == 7:                                                               # Proporcional
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)]]                       # Kp
+                k = "p"
+                
+            elif controlClass == 8:                                                             # Proporcional Integral
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
+                                [signal.TransferFunction(iNum, iDen, dt=1)],]                      # Ki
+                k = "pi"
+                
+            elif controlClass == 9:                                                             # Proporcional Derivativo
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
+                                [signal.TransferFunction(dNum, dDen, dt=1)],]                      # Kd
+                k = "pd"
+                
+            elif controlClass == 10:                                                            # Proporcional Integral Derivativo
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
+                                [signal.TransferFunction(iNum, iDen, dt=1)],                       # Ki
+                                [signal.TransferFunction(dNum, dDen, dt=1)],]                      # Kd
+                k = "pid"
+                
+            elif controlClass == 11:                                                            # Custom
+                controllerNumTemp, numNum = self.customControllerSetter(0)
+                controllerDenTemp, numDen = self.customControllerSetter(1)
+                # TODO: flag que impede sequencia se o len de cada for diferente
+                
+                contNum = len(controllerNumTemp)
+                contDen = len(controllerDenTemp)
+                temp = contNum + contDen
+                
+                contador, i, j = 0, 0, 0
+                controllerTemp = []
+                
+                while (contador < temp):
+                    if (contador % 2) == 0:
+                        controllerTemp.append(controllerDenTemp[i])
+                        i += 1
+                    else:
+                        controllerTemp.append(controllerNumTemp[j])
+                        j += 1
+                    contador += 1
+
+                controllerModel = []
+                contador = 0
+                
+                while (contador < len(controllerTemp)):
+                    controllerModel.append([signal.TransferFunction(controllerTemp[contador], controllerTemp[contador + 1], dt=1)])
+                    contador += 2
+                    
+                k = "custom"
+                
+            elif controlClass == -1:
+                # TODO: Error flag
+                texto = "Modelo do controlador invalido"
+                self.controllerOutput.appendPlainText(texto)
+            
+            
+            # Conforme selecao do usuario, seta o tipo de filtro
+            filterType = self.gFiltro.checkedId()
+            
+            if filterType == 12:    # Sem Filtro
+                filterNum = [1]
+                filterDen = [1]
+                
+            elif filterType == 13:  # Filtro Padrão
+                # L = Td * (1 - Td)
+                um = control.tf([1], [1], dt=1)
+                tTemp = control.tf(self.tdNum, self.tdDen, dt=1)
+                tDesejada = tTemp * (um - tTemp)
+                
+                numL = tDesejada.getNum()
+                filterNum = numL[0][0]
+                denL = tDesejada.getDen()
+                filterDen = denL[0][0]
+                
+            elif filterType == 14:  # Filtro Custom
+                filterNum = self.textCapture(6)
+                filterDen = self.textCapture(7)
+                
+            elif filterType == -1:
+                # TODO: Error flag
+                texto = "Modelo de filtro invalido"
+                self.controllerOutput.appendPlainText(texto)
+                
+            filterL = signal.TransferFunction(filterNum, filterDen, dt=1)
+            
+            
+            num = self.dfEnsaio.shape[0]
+            
+            dfEnsaioCopia = self.dfEnsaio.copy()
+            
+            entradaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
+            saidaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
+            
+            entradaEnsaio = np.ones((num, 1))
+            saidaEnsaio = np.ones((num, 1))
+            
+            for x in range(0, num):
+                entradaEnsaio[x] = entradaTemp[x]
+                saidaEnsaio[x] = saidaTemp[x]
+            
+            iv = self.ivText.text()
+            if iv == "": # Nao tem ensaio com variavel instrumentavel
+                saidaIV = saidaEnsaio
+            else:
+                numIV = self.dfIV.shape[0]
+                dfIVCopia = self.dfIV.copy()
+                saidaIVTemp = dfIVCopia.pop(dfIVCopia.columns[1]).to_numpy()
+                saidaIV = np.ones((numIV, 1))
+                for x in range(0, numIV):
+                    saidaIV[x] = saidaIVTemp[x]
+            
+            '''
+            resultado = vrft.design(dfEnsaio.dados de entrada, dfEnsaio.dados de saida, dfIV.dados de saida com variavel instrumentavel, funcao de transferencia objetivo, modelo de controle, filtro)
+            '''
+            
+            resultado = vrft.design(entradaEnsaio, saidaEnsaio, saidaIV, objectiveFunction, controllerModel, filterL)
+            
+            if (k == "p"):
+                ganhos = [resultado[0].item()]
+                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0])
+                cNum = [i * ganhos[0] for i in pNum]
+                self.contNum = cNum
+                self.contDen = pDen
+                self.flag = True
+                
+            elif (k == "pi"):
+                ganhos = [resultado[0].item(), resultado[1].item()]
+                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1])
+                cNum1 = [i * ganhos[0] for i in pNum]
+                cNum2 = [j * ganhos[1] for j in iNum]
+                c1 = control.tf(cNum1, pDen, dt=1)
+                c2 = control.tf(cNum2, iDen, dt=1)
+                cFinal = c1 + c2
+                cAux = cFinal.getNum()
+                self.contNum = cAux[0][0]
+                cAux = cFinal.getDen()
+                self.contDen = cAux[0][0]
+                self.flag = True
+                
+            elif (k == "pd"):
+                ganhos = [resultado[0].item(), resultado[1].item()]
+                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKd = " + str(ganhos[1])
+                cNum1 = [i * ganhos[0] for i in pNum]
+                cNum2 = [i * ganhos[1] for i in dNum]
+                c1 = control.tf(cNum1, pDen, dt=1)
+                c2 = control.tf(cNum2, dDen, dt=1)
+                cFinal = c1 + c2
+                cAux = cFinal.getNum()
+                self.contNum = cAux[0][0]
+                cAux = cFinal.getDen()
+                self.contDen = cAux[0][0]
+                self.flag = True
+                
+            elif (k =="pid"):
+                ganhos = [resultado[0].item(), resultado[1].item(), resultado[2].item()]
+                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1]) + "\n\tKd = " + str(ganhos[1])
+                cNum1 = [i * ganhos[0] for i in pNum]
+                cNum2 = [i * ganhos[1] for i in iNum]
+                cNum3 = [i * ganhos[2] for i in dNum]
+                c1 = control.tf(cNum1, pDen, dt=1)
+                c2 = control.tf(cNum2, iDen, dt=1)
+                c3 = control.tf(cNum3, dDen, dt=1)
+                cFinal = c1 + c2 + c3
+                cAux = cFinal.getNum()
+                self.contNum = cAux[0][0]
+                cAux = cFinal.getDen()
+                self.contDen = cAux[0][0]
+                self.flag = True
+                
+            elif (k == "custom"):
+                ganhos = [resultado[x].item() for x in range(numNum)]
+                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\t"
+                textoaux = ""
+                for y in range(numNum):
+                    textoaux = textoaux + "K" + str(y + 1) + " = " + str(ganhos[y]) + "\n\t"
+                texto = texto + textoaux
+                self.flag = True
+                
             self.controllerOutput.appendPlainText(texto)
         
-        
-        # Conforme selecao do usuario, seta o tipo de filtro
-        filterType = self.gFiltro.checkedId()
-        
-        if filterType == 12:    # Sem Filtro
-            filterNum = [1]
-            filterDen = [1]
-            
-        elif filterType == 13:  # Filtro Padrão
-            # L = Td * (1 - Td)
-            um = control.tf([1], [1], dt=1)
-            tTemp = control.tf(self.tdNum, self.tdDen, dt=1)
-            tDesejada = tTemp * (um - tTemp)
-            
-            numL = tDesejada.getNum()
-            filterNum = numL[0][0]
-            denL = tDesejada.getDen()
-            filterDen = denL[0][0]
-            
-        elif filterType == 14:  # Filtro Custom
-            filterNum = self.textCapture(6)
-            filterDen = self.textCapture(7)
-            
-        elif filterType == -1:
-            # TODO: Error flag
-            texto = "Modelo de filtro invalido"
-            self.controllerOutput.appendPlainText(texto)
-            
-        filterL = signal.TransferFunction(filterNum, filterDen, dt=1)
-        
-        
-        num = self.dfEnsaio.shape[0]
-        
-        dfEnsaioCopia = self.dfEnsaio.copy()
-        
-        entradaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-        saidaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-        
-        entradaEnsaio = np.ones((num, 1))
-        saidaEnsaio = np.ones((num, 1))
-        
-        for x in range(0, num):
-            entradaEnsaio[x] = entradaTemp[x]
-            saidaEnsaio[x] = saidaTemp[x]
-        
-        iv = self.ivText.text()
-        if iv == "": # Nao tem ensaio com variavel instrumentavel
-            saidaIV = saidaEnsaio
-        else:
-            numIV = self.dfIV.shape[0]
-            dfIVCopia = self.dfIV.copy()
-            saidaIVTemp = dfIVCopia.pop(dfIVCopia.columns[1]).to_numpy()
-            saidaIV = np.ones((numIV, 1))
-            for x in range(0, numIV):
-                saidaIV[x] = saidaIVTemp[x]
-        
-        '''
-        resultado = vrft.design(dfEnsaio.dados de entrada, dfEnsaio.dados de saida, dfIV.dados de saida com variavel instrumentavel, funcao de transferencia objetivo, modelo de controle, filtro)
-        '''
-        
-        resultado = vrft.design(entradaEnsaio, saidaEnsaio, saidaIV, objectiveFunction, controllerModel, filterL)
-        
-        if (k == "p"):
-            ganhos = [resultado[0].item()]
-            texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0])
-            cNum = [i * ganhos[0] for i in pNum]
-            self.contNum = cNum
-            self.contDen = pDen
-            self.flag = True
-            
-        elif (k == "pi"):
-            ganhos = [resultado[0].item(), resultado[1].item()]
-            texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1])
-            cNum1 = [i * ganhos[0] for i in pNum]
-            cNum2 = [j * ganhos[1] for j in iNum]
-            c1 = control.tf(cNum1, pDen, dt=1)
-            c2 = control.tf(cNum2, iDen, dt=1)
-            cFinal = c1 + c2
-            cAux = cFinal.getNum()
-            self.contNum = cAux[0][0]
-            cAux = cFinal.getDen()
-            self.contDen = cAux[0][0]
-            self.flag = True
-            
-        elif (k == "pd"):
-            ganhos = [resultado[0].item(), resultado[1].item()]
-            texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKd = " + str(ganhos[1])
-            cNum1 = [i * ganhos[0] for i in pNum]
-            cNum2 = [i * ganhos[1] for i in dNum]
-            c1 = control.tf(cNum1, pDen, dt=1)
-            c2 = control.tf(cNum2, dDen, dt=1)
-            cFinal = c1 + c2
-            cAux = cFinal.getNum()
-            self.contNum = cAux[0][0]
-            cAux = cFinal.getDen()
-            self.contDen = cAux[0][0]
-            self.flag = True
-            
-        elif (k =="pid"):
-            ganhos = [resultado[0].item(), resultado[1].item(), resultado[2].item()]
-            texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1]) + "\n\tKd = " + str(ganhos[1])
-            cNum1 = [i * ganhos[0] for i in pNum]
-            cNum2 = [i * ganhos[1] for i in iNum]
-            cNum3 = [i * ganhos[2] for i in dNum]
-            c1 = control.tf(cNum1, pDen, dt=1)
-            c2 = control.tf(cNum2, iDen, dt=1)
-            c3 = control.tf(cNum3, dDen, dt=1)
-            cFinal = c1 + c2 + c3
-            cAux = cFinal.getNum()
-            self.contNum = cAux[0][0]
-            cAux = cFinal.getDen()
-            self.contDen = cAux[0][0]
-            self.flag = True
-            
-        elif (k == "custom"):
-            ganhos = [resultado[x].item() for x in range(numNum)]
-            texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\t"
-            textoaux = ""
-            for y in range(numNum):
-                textoaux = textoaux + "K" + str(y + 1) + " = " + str(ganhos[y]) + "\n\t"
-            texto = texto + textoaux
-            self.flag = True
-            
-        self.controllerOutput.appendPlainText(texto)
-        
-        objectiveFunction = 0
-        controllerModel = 0
-        filterL = 0
-        resultado = 0
+        # objectiveFunction = 0
+        # controllerModel = 0
+        # filterL = 0
+        # resultado = 0
 
     ## Botao para gerar o grafico de T(z)
     def graphTzPressed(self):
-        N = 100
+        
         lw = 1.5 # linewidth
-        flag = False
+        
+        case = 0
+        
+        count1 = False
+        count2 = False
         
         if self.flag == True:
-            flag = True
+            count1 = True
+        if self.ensaioMFText.text() != '':
+            count2 = True
+            
+        if count1 or count2:
+            if count2 == False:
+                case = 1
+            elif count1 == False:
+                case = 2
+            else:
+                case = 3
+        
+        # Printar somente a Td
+        if case == 1:
+            num = self.dfEnsaio.shape[0]
+            
+            dfEnsaioCopia = self.dfEnsaio.copy()
+            
+            entradaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
+            saidaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
+            
+            entradaEnsaio = np.ones((num, 1))
+            saidaEnsaio = np.ones((num, 1))
+            
+            for x in range(0, num):
+                entradaEnsaio[x] = entradaTemp[x]
+                saidaEnsaio[x] = saidaTemp[x]
+                
+                
+            # plt.plot(saidaEnsaiF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
+            
             Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
 
-            # # step signal
-            u = np.ones((N, 1))
-            u[0] = 0
-
-            yd = vrft.filter(Td, u)
-
+            yd = vrft.filter(Td, entradaEnsaio)
+            
+            # inputMax = np.amax(yd)
+            
+            # for y in range(0, num):
+            #     yd[y] = yd[y] / inputMax
 
             # plot da resposta ao salto para o sinal da Td desejada
             plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="Td_Desejada")
-        
-
-        # TODO:
-        if self.ensaioMFText.text() != '':
-            flag = True
+            
+        # Printar somente a malha fechada
+        elif case == 2:
             num = self.dfEnsaioMF.shape[0]
             
             dfEnsaioMFCopia = self.dfEnsaioMF.copy()
@@ -494,33 +524,125 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
             saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
             
-            entradaEnsaioMF = np.ones((num, 1))
-            saidaEnsaioMF = np.ones((num, 1))
+            entradaMF = np.ones((num, 1))
+            saidaMF = np.ones((num, 1))
             
             for x in range(0, num):
-                entradaEnsaioMF[x] = entradaMFTemp[x]
-                saidaEnsaioMF[x] = saidaMFTemp[x]
+                entradaMF[x] = entradaMFTemp[x]
+                saidaMF[x] = saidaMFTemp[x]
                 
-            inputMax = np.amax(saidaEnsaioMF)
+            # inputMax = np.amax(saidaMF)
+            
+            # for y in range(0, num):
+            #     saidaMF[y] = saidaMF[y] / inputMax
+                
+            plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
+            
+        # Printar Td e malha fechada juntas
+        elif case == 3:
+            num2 = self.dfEnsaioMF.shape[0]
+            
+            num1 = self.dfEnsaio.shape[0]
+            
+            num = num1 if num1 < num2 else num2
+            
+            # Td Desejada
+            dfEnsaioCopia = self.dfEnsaio.copy()
+            
+            entradaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
+            saidaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
+            
+            entradaEnsaio = np.ones((num, 1))
+            saidaEnsaio = np.ones((num, 1))
+            
+            for x in range(0, num):
+                entradaEnsaio[x] = entradaTemp[x]
+                saidaEnsaio[x] = saidaTemp[x]
+                
+            Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
+
+            yTd = vrft.filter(Td, entradaEnsaio)
+            
+            inputMax = np.amax(yTd)
             
             for y in range(0, num):
-                saidaEnsaioMF[y] = saidaEnsaioMF[y] / inputMax
+                yTd[y] = yTd[y] / inputMax
                 
-            plt.plot(saidaEnsaioMF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
+            
+            # Malha fechada
+            dfEnsaioMFCopia = self.dfEnsaioMF.copy()
+            
+            entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+            saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+            
+            entradaMF = np.ones((num, 1))
+            saidaMF = np.ones((num, 1))
+            
+            for x in range(0, num):
+                entradaMF[x] = entradaMFTemp[x]
+                saidaMF[x] = saidaMFTemp[x]
+                
+            inputMax = np.amax(saidaMF)
+            
+            for y in range(0, num):
+                saidaMF[y] = saidaMF[y] / inputMax
+            
+            plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
+            plt.plot(yTd, "b", drawstyle="steps", linewidth=lw, label="Td_Desejada")
         
-        
-        if flag == True:
+        if case > 0:
             plt.grid(True)
             plt.xlabel("time (samples)")
             plt.ylabel("Td")
-            plt.xlim(left=-2, right=N)
+            plt.xlim(left=-2, right=num)
             plt.legend()
             plt.show()
     
     # TODO:
     ## Botao para gerar o custo JVR
     def JVRPressed(self):
-        pass
+        
+        lw = 1.5 # linewidth
+        
+        if self.flag == True:
+            count1 = True
+        if self.ensaioMFText.text() != '':
+            count2 = True
+            
+        if count1 == True and count2 == True:
+            
+            num = self.dfEnsaioMF.shape[0]
+            
+            dfEnsaioMFCopia = self.dfEnsaioMF.copy()
+            
+            entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+            saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+            
+            entradaMF = np.ones((num, 1))
+            saidaMF = np.ones((num, 1))
+            
+            for x in range(0, num):
+                entradaMF[x] = entradaMFTemp[x]
+                saidaMF[x] = saidaMFTemp[x]
+                
+            Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
+
+            yTd = vrft.filter(Td, entradaMF)
+            
+            soma = 0
+            
+            for i in range(num):
+                diff = saidaMF[i][0] - yTd[i][0]
+                squareDiff = diff**2
+                soma += squareDiff
+                
+            MSE = soma / num
+            texto = "Estimativa do custo minimizado: " + str(MSE)
+            self.MFOutput.appendPlainText(texto)
+        
+        print(saidaMF[1])
+        print(saidaMF[1][0])
+        print ("The Mean Square Error is: " , MSE)
 
     # TODO:
     ## Botao para calcular a sensibilidade
@@ -546,7 +668,6 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             y = list(y[0][0])
 
             z, p, k = control.tf2zpk(x, y)
-            print(p)
 
             tam1 = z.shape[0]
             
@@ -559,7 +680,9 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
 
             for i in range(tam1):
                 redondo = np.round(z[i], 5)
-                if "j" in str(redondo):
+                if z[i] == 0:
+                    aux = "(z)"
+                elif "j" in str(redondo):
                     aux = "(z - " + str(redondo)[1:-1] + ")"
                 else:
                     aux = "(z - " + str(redondo) + ")"
@@ -585,10 +708,13 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             tam2 = p.shape[0]
 
             texto = ["  "]
+            print(p)
 
             for j in range(tam2):
-                redondo = np.round(p[j], 5)
-                if "j" in str(redondo):
+                redondo = np.round(p[j], 7)
+                if p[j] == 0:
+                    aux = "(z)"
+                elif "j" in str(redondo):
                     aux = "(z - " + str(redondo)[1:-1] + ")"
                 else:
                     aux = "(z - " + str(redondo) + ")"

@@ -29,7 +29,7 @@
      </font>
     </property>
     <property name="currentIndex">
-     <number>2</number>
+     <number>0</number>
     </property>
     <property name="iconSize">
      <size>
@@ -317,7 +317,7 @@
           </font>
          </property>
          <property name="statusTip">
-          <string>Tensão de saída</string>
+          <string>TensãEntrada da tensão de saída</string>
          </property>
          <property name="text">
           <string/>
@@ -377,7 +377,7 @@
        </font>
       </property>
       <property name="statusTip">
-       <string>Função de transferência obtivo padrão</string>
+       <string>Função de transferência desejada calculada</string>
       </property>
       <property name="text">
        <string>Padrão</string>
@@ -536,7 +536,7 @@
        </font>
       </property>
       <property name="statusTip">
-       <string>Função de transferência obtivo definido pelo usuário</string>
+       <string>Função de transferência desejada definida pelo usuário</string>
       </property>
       <property name="text">
        <string>Definido pelo usuário</string>
@@ -649,6 +649,10 @@
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
          </property>
+         <property name="toolTip">
+          <string>Formato de entrada dos dados:
+[a]</string>
+         </property>
          <property name="statusTip">
           <string>Numerador da função de transferência obtivo definido pelo usuário</string>
          </property>
@@ -690,6 +694,10 @@
          </property>
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Formato de entrada dos dados:
+[1, -b, -c]</string>
          </property>
          <property name="statusTip">
           <string>Denominador da função de transferência obtivo definido pelo usuário</string>
@@ -831,6 +839,10 @@
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
          </property>
+         <property name="toolTip">
+          <string>Formato de entrada dos dados:
+[1, -a]</string>
+         </property>
          <property name="statusTip">
           <string>Numerador do filtro customizado pelo usuário</string>
          </property>
@@ -872,6 +884,10 @@
          </property>
          <property name="cursor">
           <cursorShape>IBeamCursor</cursorShape>
+         </property>
+         <property name="toolTip">
+          <string>Formato de entrada dos dados:
+[1, -b, -c]</string>
          </property>
          <property name="statusTip">
           <string>Denominador do filtro customizado pelo usuário</string>
@@ -1139,8 +1155,12 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Formato de entrada dos dados:
+[[1, -a], [1, -c]]</string>
+         </property>
          <property name="statusTip">
-          <string>Controlador customizado pelo usuário</string>
+          <string>Numerador do controlador definido pelo usuário</string>
          </property>
          <property name="text">
           <string/>
@@ -1169,8 +1189,12 @@
            <pointsize>12</pointsize>
           </font>
          </property>
+         <property name="toolTip">
+          <string>Formato de entrada dos dados:
+[[1, -b], [1, -d]]</string>
+         </property>
          <property name="statusTip">
-          <string>Controlador customizado pelo usuário</string>
+          <string>Denominador do controlador definido pelo usuário</string>
          </property>
          <property name="text">
           <string/>
@@ -1207,7 +1231,7 @@
        <item row="0" column="1">
         <widget class="QLineEdit" name="textAcom">
          <property name="statusTip">
-          <string>Função de transferência obtivo padrão</string>
+          <string>Tempo de acomodação em maçha aberta da planta</string>
          </property>
         </widget>
        </item>
@@ -1243,8 +1267,11 @@
        </item>
        <item row="1" column="1">
         <widget class="QLineEdit" name="textSpeed">
+         <property name="toolTip">
+          <string>Valores de [0, 100)</string>
+         </property>
          <property name="statusTip">
-          <string>Função de transferência obtivo padrão</string>
+          <string>Velocidade relativa desajada</string>
          </property>
         </widget>
        </item>
@@ -1281,7 +1308,7 @@
        <item row="2" column="1">
         <widget class="QLineEdit" name="textFreq">
          <property name="statusTip">
-          <string>Função de transferência obtivo padrão</string>
+          <string>Frequência de amostragem do conjunto de dados</string>
          </property>
         </widget>
        </item>
@@ -1335,7 +1362,7 @@
        </rect>
       </property>
       <property name="statusTip">
-       <string>Gerar gráfico da T(z) da planta com o controlador projetado</string>
+       <string>Gerar gráfico de Td(z) desejada e do sistema em malha fechada</string>
       </property>
       <property name="text">
        <string>Gerar Gráfico T(z)</string>
@@ -1356,7 +1383,7 @@
        </font>
       </property>
       <property name="text">
-       <string>Dados de resposta ao salto em Malha Fechada</string>
+       <string>Dados de resposta em Malha Fechada</string>
       </property>
      </widget>
      <widget class="Line" name="line_7">
@@ -1398,7 +1425,7 @@
        </rect>
       </property>
       <property name="statusTip">
-       <string>Estimar sensibilidade da planta</string>
+       <string>Estimar sensibilidade do sistema</string>
       </property>
       <property name="text">
        <string>Estimar Função de Sensibilidade</string>
@@ -1488,6 +1515,9 @@
       <property name="tabStopWidth">
        <number>100</number>
       </property>
+      <property name="tabStopDistance">
+       <double>100.000000000000000</double>
+      </property>
      </widget>
     </widget>
    </widget>
@@ -1498,7 +1528,7 @@
      <x>0</x>
      <y>0</y>
      <width>862</width>
-     <height>26</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuArquivo">
