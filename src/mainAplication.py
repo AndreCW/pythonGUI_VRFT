@@ -14,9 +14,9 @@ import vrft  # vrft package
 import control.matlab as control
 import math
 
-import guiPrincipal
+from guiPrincipal import Ui_MainWindow
 
-class MyWindow(guiPrincipal.Ui_MainWindow):
+class MyWindow(Ui_MainWindow):
     def mySetupUi(self, MainWindow):
         self.flag = False
         ########################################################################
@@ -263,7 +263,6 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             
             objectiveFunction = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
             
-            
             # Conforme selecao do usuario, seta o tipo de controlador
             controlClass = self.gControlador.checkedId()
             
@@ -331,7 +330,6 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
                 texto = "Modelo do controlador invalido"
                 self.controllerOutput.appendPlainText(texto)
             
-            
             # Conforme selecao do usuario, seta o tipo de filtro
             filterType = self.gFiltro.checkedId()
             
@@ -343,11 +341,12 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
                 # L = Td * (1 - Td)
                 um = control.tf([1], [1], dt=1)
                 tTemp = control.tf(self.tdNum, self.tdDen, dt=1)
-                tDesejada = tTemp * (um - tTemp)
+                tDesejada = (um - tTemp)
+                tDesejada = tDesejada * tTemp
                 
-                numL = tDesejada.getNum()
+                numL = tDesejada.num
                 filterNum = numL[0][0]
-                denL = tDesejada.getDen()
+                denL = tDesejada.den
                 filterDen = denL[0][0]
                 
             elif filterType == 14:  # Filtro Custom
@@ -360,7 +359,6 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
                 self.controllerOutput.appendPlainText(texto)
                 
             filterL = signal.TransferFunction(filterNum, filterDen, dt=1)
-            
             
             num = self.dfEnsaio.shape[0]
             
@@ -409,9 +407,9 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
                 c1 = control.tf(cNum1, pDen, dt=1)
                 c2 = control.tf(cNum2, iDen, dt=1)
                 cFinal = c1 + c2
-                cAux = cFinal.getNum()
+                cAux = cFinal.num
                 self.contNum = cAux[0][0]
-                cAux = cFinal.getDen()
+                cAux = cFinal.den
                 self.contDen = cAux[0][0]
                 self.flag = True
                 
@@ -423,15 +421,15 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
                 c1 = control.tf(cNum1, pDen, dt=1)
                 c2 = control.tf(cNum2, dDen, dt=1)
                 cFinal = c1 + c2
-                cAux = cFinal.getNum()
+                cAux = cFinal.num()
                 self.contNum = cAux[0][0]
-                cAux = cFinal.getDen()
+                cAux = cFinal.den()
                 self.contDen = cAux[0][0]
                 self.flag = True
                 
             elif (k =="pid"):
                 ganhos = [resultado[0].item(), resultado[1].item(), resultado[2].item()]
-                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1]) + "\n\tKd = " + str(ganhos[1])
+                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1]) + "\n\tKd = " + str(ganhos[2])
                 cNum1 = [i * ganhos[0] for i in pNum]
                 cNum2 = [i * ganhos[1] for i in iNum]
                 cNum3 = [i * ganhos[2] for i in dNum]
@@ -439,9 +437,9 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
                 c2 = control.tf(cNum2, iDen, dt=1)
                 c3 = control.tf(cNum3, dDen, dt=1)
                 cFinal = c1 + c2 + c3
-                cAux = cFinal.getNum()
+                cAux = cFinal.num()
                 self.contNum = cAux[0][0]
-                cAux = cFinal.getDen()
+                cAux = cFinal.den()
                 self.contDen = cAux[0][0]
                 self.flag = True
                 
@@ -455,11 +453,10 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
                 self.flag = True
                 
             self.controllerOutput.appendPlainText(texto)
-        
-        # objectiveFunction = 0
-        # controllerModel = 0
-        # filterL = 0
-        # resultado = 0
+
+        else:
+            texto = "Adicione um conjunto de dados."
+            self.controllerOutput.setPlainText(texto)
 
     ## Botao para gerar o grafico de T(z)
     def graphTzPressed(self):
@@ -499,9 +496,6 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             for x in range(0, num):
                 entradaEnsaio[x] = entradaTemp[x]
                 saidaEnsaio[x] = saidaTemp[x]
-                
-                
-            # plt.plot(saidaEnsaiF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
             
             Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
 
@@ -590,6 +584,10 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
             plt.plot(yTd, "b", drawstyle="steps", linewidth=lw, label="Td_Desejada")
         
+        elif case == 0:
+            texto = "Adicione um ensaio de malha fechada ou aplique o método VRFT primeiro."
+            self.MFOutput.setPlainText(texto)
+        
         if case > 0:
             plt.grid(True)
             plt.xlabel("time (samples)")
@@ -597,12 +595,15 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             plt.xlim(left=-2, right=num)
             plt.legend()
             plt.show()
+        
     
     # TODO:
     ## Botao para gerar o custo JVR
     def JVRPressed(self):
         
         lw = 1.5 # linewidth
+        count1 = False
+        count2 = False
         
         if self.flag == True:
             count1 = True
@@ -639,10 +640,11 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             MSE = soma / num
             texto = "Estimativa do custo minimizado: " + str(MSE)
             self.MFOutput.appendPlainText(texto)
+            
+        else:
+            texto = "Aplicar o método VRFT primeiro."
+            self.MFOutput.insertPlainText(texto)
         
-        print(saidaMF[1])
-        print(saidaMF[1][0])
-        print ("The Mean Square Error is: " , MSE)
 
     # TODO:
     ## Botao para calcular a sensibilidade
@@ -662,30 +664,37 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             
             sensi = 1 / (1 + G * cProj)
             
-            x = sensi.getNum()
+            x = sensi.num
             x = list(x[0][0])
-            y = sensi.getDen()
+            y = sensi.den
             y = list(y[0][0])
+            
+            ######
+            
+            teste = sensi.num
+            print(teste[0])
+            
+            ######
 
             z, p, k = control.tf2zpk(x, y)
 
             tam1 = z.shape[0]
             
             texto = "Sensibilidade estimada da planta: "
-            self.MFOutput.appendPlainText(texto)
+            self.MFOutput.setPlainText(texto)
             
             listaK = [str(k)]
 
             texto = [str(k)]
 
             for i in range(tam1):
-                redondo = np.round(z[i], 5)
+                redondo = np.round(z[i], 7)
                 if z[i] == 0:
                     aux = "(z)"
                 elif "j" in str(redondo):
-                    aux = "(z - " + str(redondo)[1:-1] + ")"
+                    aux = "(z + (" + str(redondo)[1:-1] + "))"
                 else:
-                    aux = "(z - " + str(redondo) + ")"
+                    aux = "(z + (" + str(redondo) + "))"
                 texto.append(aux)
             
             texto = ''.join(texto)
@@ -696,10 +705,11 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
 
             linha = []
             for i in range(length):
-                if i < len(str(k)):
-                    linha.append(" ")
-                else:
-                    linha.append("-")
+                if i < 100:
+                    if i < len(str(k)):
+                        linha.append(" ")
+                    else:
+                        linha.append("-")
                     
             linha = ''.join(linha)
 
@@ -708,16 +718,15 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
             tam2 = p.shape[0]
 
             texto = ["  "]
-            print(p)
 
             for j in range(tam2):
                 redondo = np.round(p[j], 7)
                 if p[j] == 0:
                     aux = "(z)"
                 elif "j" in str(redondo):
-                    aux = "(z - " + str(redondo)[1:-1] + ")"
+                    aux = "(z + (" + str(redondo)[1:-1] + "))"
                 else:
-                    aux = "(z - " + str(redondo) + ")"
+                    aux = "(z + (" + str(redondo) + "))"
                 texto.append(aux)
                 
             texto = ''.join(texto)
@@ -726,7 +735,7 @@ class MyWindow(guiPrincipal.Ui_MainWindow):
         
         else:
             texto = "Aplicar o método VRFT primeiro."
-            self.MFOutput.appendPlainText(texto)
+            self.MFOutput.setPlainText(texto)
             
     
     ######
