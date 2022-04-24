@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>EasyVRFT</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <widget class="QTabWidget" name="tabWidget">
@@ -53,6 +53,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -71,6 +73,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -254,9 +258,9 @@
      <widget class="QWidget" name="layoutWidget">
       <property name="geometry">
        <rect>
-        <x>530</x>
-        <y>170</y>
-        <width>201</width>
+        <x>460</x>
+        <y>180</y>
+        <width>321</width>
         <height>65</height>
        </rect>
       </property>
@@ -272,7 +276,7 @@
           <string>Entrada do Duty Cicle</string>
          </property>
          <property name="text">
-          <string>D:</string>
+          <string>Razão Cíclica(D):</string>
          </property>
         </widget>
        </item>
@@ -305,7 +309,7 @@
           <string>Tensão de saída</string>
          </property>
          <property name="text">
-          <string>Vo:</string>
+          <string>Tensão de Saída(Vo):</string>
          </property>
         </widget>
        </item>
@@ -366,7 +370,7 @@
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>150</y>
+        <y>160</y>
         <width>111</width>
         <height>31</height>
        </rect>
@@ -525,7 +529,7 @@
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>300</y>
+        <y>330</y>
         <width>231</width>
         <height>20</height>
        </rect>
@@ -557,6 +561,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -587,35 +593,11 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="QCheckBox" name="ZFNM">
-      <property name="enabled">
-       <bool>false</bool>
-      </property>
-      <property name="geometry">
-       <rect>
-        <x>30</x>
-        <y>440</y>
-        <width>341</width>
-        <height>20</height>
-       </rect>
-      </property>
-      <property name="font">
-       <font>
-        <pointsize>11</pointsize>
-       </font>
-      </property>
-      <property name="statusTip">
-       <string>Planta tem algum zero de fase não mínima</string>
-      </property>
-      <property name="text">
-       <string>Planta com zero de fase não mínima</string>
-      </property>
-     </widget>
      <widget class="QWidget" name="layoutWidget_5">
       <property name="geometry">
        <rect>
         <x>60</x>
-        <y>340</y>
+        <y>370</y>
         <width>261</width>
         <height>69</height>
        </rect>
@@ -727,6 +709,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -771,6 +755,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -806,7 +792,7 @@
        <rect>
         <x>560</x>
         <y>370</y>
-        <width>261</width>
+        <width>251</width>
         <height>69</height>
        </rect>
       </property>
@@ -1059,6 +1045,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -1207,7 +1195,7 @@
       <property name="geometry">
        <rect>
         <x>30</x>
-        <y>185</y>
+        <y>210</y>
         <width>342</width>
         <height>100</height>
        </rect>
@@ -1346,6 +1334,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -1380,6 +1370,8 @@
       <property name="font">
        <font>
         <pointsize>12</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
        </font>
       </property>
       <property name="text">
@@ -1511,12 +1503,6 @@
       </property>
       <property name="plainText">
        <string/>
-      </property>
-      <property name="tabStopWidth">
-       <number>100</number>
-      </property>
-      <property name="tabStopDistance">
-       <double>100.000000000000000</double>
       </property>
      </widget>
     </widget>

@@ -204,7 +204,7 @@ class MyWindow(Ui_MainWindow):
                     
             return valores, fecha
         
-    # TODO:    
+    # TODO: Adicionar trava para quando não for informado todos os dados necessários
     ## Botao para gerar o ponto ideal para coleta de dados    
     def pontoIdealPressed(self):
         duty = self.textCapture(8)
@@ -212,7 +212,9 @@ class MyWindow(Ui_MainWindow):
         
         controllerType = self.gPre.checkedId()
         
-        if controllerType == 15:
+        if controllerType == -1 or duty == None or v0 == None:
+            pass
+        elif controllerType == 15:
             ideal = v0[0] / duty[0]
         elif controllerType == 16:
             ideal = v0[0] / (1 - duty[0])
@@ -221,12 +223,15 @@ class MyWindow(Ui_MainWindow):
         elif controllerType == 18:
             ideal = v0[0] / (duty[0] * (1 - duty[0]))
             
-        ideal = 1 / ideal
-            
-        texto = "Ganho estático máximo: " + str(ideal) + " [V<sup>-1</sup>]"
-            
-        self.preOutput.append(texto)
+        if controllerType != -1 and duty != None and v0 != None:
+            ideal = 1 / ideal
+                
+            texto = "Ganho estático máximo: " + str(ideal) + " [V<sup>-1</sup>]"
+                
+            self.preOutput.append(texto)
+        
     
+    # TODO: Adicionar trava para quando não for informado todos os dados necessários
     ## Botao para aplicar o metodo VRFT
     def VRFTPressed(self):
         self.flag = False
@@ -276,25 +281,26 @@ class MyWindow(Ui_MainWindow):
             dDen = [1, 0]
             
             if controlClass == 7:                                                               # Proporcional
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)]]                       # Kp
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)]]                    # Kp
                 k = "p"
                 
             elif controlClass == 8:                                                             # Proporcional Integral
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                    # Kp
                                 [signal.TransferFunction(iNum, iDen, dt=1)],]                      # Ki
                 k = "pi"
                 
             elif controlClass == 9:                                                             # Proporcional Derivativo
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                    # Kp
                                 [signal.TransferFunction(dNum, dDen, dt=1)],]                      # Kd
                 k = "pd"
                 
             elif controlClass == 10:                                                            # Proporcional Integral Derivativo
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                       # Kp
+                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],                    # Kp
                                 [signal.TransferFunction(iNum, iDen, dt=1)],                       # Ki
                                 [signal.TransferFunction(dNum, dDen, dt=1)],]                      # Kd
                 k = "pid"
                 
+            ##############################################################################################
             elif controlClass == 11:                                                            # Custom
                 controllerNumTemp, numNum = self.customControllerSetter(0)
                 controllerDenTemp, numDen = self.customControllerSetter(1)
@@ -307,6 +313,7 @@ class MyWindow(Ui_MainWindow):
                 contador, i, j = 0, 0, 0
                 controllerTemp = []
                 
+                # TODO: Comportamento está povoando controllerTemp invertido, primeiro den depois num. Precisa ser revisto para ficar primeiro num depois den
                 while (contador < temp):
                     if (contador % 2) == 0:
                         controllerTemp.append(controllerDenTemp[i])
@@ -317,10 +324,10 @@ class MyWindow(Ui_MainWindow):
                     contador += 1
 
                 controllerModel = []
-                contador = 0
+                contador = 1
                 
                 while (contador < len(controllerTemp)):
-                    controllerModel.append([signal.TransferFunction(controllerTemp[contador], controllerTemp[contador + 1], dt=1)])
+                    controllerModel.append([signal.TransferFunction(controllerTemp[contador], controllerTemp[contador - 1], dt=1)])
                     contador += 2
                     
                 k = "custom"
@@ -408,9 +415,9 @@ class MyWindow(Ui_MainWindow):
                 c2 = control.tf(cNum2, iDen, dt=1)
                 cFinal = c1 + c2
                 cAux = cFinal.num
-                self.contNum = cAux[0][0]
+                self.contNum = cAux
                 cAux = cFinal.den
-                self.contDen = cAux[0][0]
+                self.contDen = cAux
                 self.flag = True
                 
             elif (k == "pd"):
@@ -421,10 +428,10 @@ class MyWindow(Ui_MainWindow):
                 c1 = control.tf(cNum1, pDen, dt=1)
                 c2 = control.tf(cNum2, dDen, dt=1)
                 cFinal = c1 + c2
-                cAux = cFinal.num()
-                self.contNum = cAux[0][0]
-                cAux = cFinal.den()
-                self.contDen = cAux[0][0]
+                cAux = cFinal.num
+                self.contNum = cAux
+                cAux = cFinal.den
+                self.contDen = cAux
                 self.flag = True
                 
             elif (k =="pid"):
@@ -437,10 +444,10 @@ class MyWindow(Ui_MainWindow):
                 c2 = control.tf(cNum2, iDen, dt=1)
                 c3 = control.tf(cNum3, dDen, dt=1)
                 cFinal = c1 + c2 + c3
-                cAux = cFinal.num()
-                self.contNum = cAux[0][0]
-                cAux = cFinal.den()
-                self.contDen = cAux[0][0]
+                cAux = cFinal.num
+                self.contNum = cAux
+                cAux = cFinal.den
+                self.contDen = cAux
                 self.flag = True
                 
             elif (k == "custom"):
@@ -642,8 +649,8 @@ class MyWindow(Ui_MainWindow):
             self.MFOutput.appendPlainText(texto)
             
         else:
-            texto = "Aplicar o método VRFT primeiro."
-            self.MFOutput.insertPlainText(texto)
+            texto = "Aplicar o método VRFT primeiro e adicionar os dados da malha fechada."
+            self.MFOutput.setPlainText(texto)
         
 
     # TODO:
@@ -668,13 +675,6 @@ class MyWindow(Ui_MainWindow):
             x = list(x[0][0])
             y = sensi.den
             y = list(y[0][0])
-            
-            ######
-            
-            teste = sensi.num
-            print(teste[0])
-            
-            ######
 
             z, p, k = control.tf2zpk(x, y)
 
