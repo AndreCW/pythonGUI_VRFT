@@ -72,24 +72,24 @@ class MyWindow(Ui_MainWindow):
         self.gPre.setId(self.bSepic, 18)
         
         ## Chamada das funções para quando algum botao for pressionado
-        self.gTd.buttonClicked.connect(self.TdPressed)
-        self.gControlador.buttonClicked.connect(self.CPressed)
-        self.gFiltro.buttonClicked.connect(self.filterPressed)
+        self.gTd.buttonClicked.connect(self.__TdPressed)
+        self.gControlador.buttonClicked.connect(self.__CPressed)
+        self.gFiltro.buttonClicked.connect(self.__filterPressed)
         
-        self.bPontoOp.clicked.connect(self.pontoIdealPressed)
-        self.bVRFT.clicked.connect(self.VRFTPressed)
-        self.grafTd.clicked.connect(self.graphTzPressed)
-        self.bJVR.clicked.connect(self.JVRPressed)
-        self.bSensi.clicked.connect(self.sensiPressed)
+        self.bPontoOp.clicked.connect(self.__pontoIdealPressed)
+        self.bVRFT.clicked.connect(self.__VRFTPressed)
+        self.grafTd.clicked.connect(self.__graphTzPressed)
+        self.bJVR.clicked.connect(self.__JVRPressed)
+        self.bSensi.clicked.connect(self.__sensiPressed)
         
-        self.bEnsaio.clicked.connect(self.ensaioPressed)
-        self.bIV.clicked.connect(self.ivPressed)
-        self.bEnsaioMF.clicked.connect(self.ensaioMFPressed)
+        self.bEnsaio.clicked.connect(self.__ensaioPressed)
+        self.bIV.clicked.connect(self.__ivPressed)
+        self.bEnsaioMF.clicked.connect(self.__ensaioMFPressed)
         
     ################################################################
     ## Funções de botoes que foram pressionados
     ## Deixa os campos de escrita do modelo de referencia como read only conforme o botao que foi selecionado
-    def TdPressed(self):
+    def __TdPressed(self):
         pressed = self.gTd.checkedId()
         if pressed == 5:
             self.textAcom.setReadOnly(False)
@@ -103,7 +103,7 @@ class MyWindow(Ui_MainWindow):
             self.TdDen.setReadOnly(False)
     
     ## Deixa o campo de escrita do controlador como read only conforme o botao que foi selecionado
-    def CPressed(self):
+    def __CPressed(self):
         pressed = self.gControlador.checkedId()
         if pressed == 11:
             self.customCNum.setReadOnly(False)
@@ -113,7 +113,7 @@ class MyWindow(Ui_MainWindow):
             self.customCDen.setReadOnly(True)
     
     ## Deixa o campo de escrita do filtro como read only conforme o botao que foi selecionado
-    def filterPressed(self):
+    def __filterPressed(self):
         pressed = self.gFiltro.checkedId()
         if pressed == 14:
             self.fTdNum.setReadOnly(False)
@@ -123,7 +123,7 @@ class MyWindow(Ui_MainWindow):
             self.fTdDen.setReadOnly(True)
     
     ## 
-    def textCapture(self, chave):
+    def __textCapture(self, chave):
         valor = ""
         if chave == 1:
             valor = self.textAcom.text()
@@ -154,7 +154,7 @@ class MyWindow(Ui_MainWindow):
             return floats
     
     ## 
-    def customControllerSetter(self, chave):
+    def __customControllerSetter(self, chave):
         if chave == 0:
             valor = self.customCNum.text()
         else:
@@ -206,9 +206,9 @@ class MyWindow(Ui_MainWindow):
         
     # TODO: Adicionar trava para quando não for informado todos os dados necessários
     ## Botao para gerar o ponto ideal para coleta de dados    
-    def pontoIdealPressed(self):
-        duty = self.textCapture(8)
-        v0 = self.textCapture(9)
+    def __pontoIdealPressed(self):
+        duty = self.__textCapture(8)
+        v0 = self.__textCapture(9)
         
         controllerType = self.gPre.checkedId()
         
@@ -233,7 +233,7 @@ class MyWindow(Ui_MainWindow):
     
     # TODO: Adicionar trava para quando não for informado todos os dados necessários
     ## Botao para aplicar o metodo VRFT
-    def VRFTPressed(self):
+    def __VRFTPressed(self):
         self.flag = False
         
         if self.ensaioText.text() != '':
@@ -244,9 +244,9 @@ class MyWindow(Ui_MainWindow):
             # zeroFNM = check ZFNM button
             
             if modelFunc == 5:
-                tso = self.textCapture(1)
-                speed = self.textCapture(2)
-                freq = self.textCapture(3)
+                tso = self.__textCapture(1)
+                speed = self.__textCapture(2)
+                freq = self.__textCapture(3)
                 
                 p1 = math.exp(-(4 / freq[0]) / (tso[0] * 10**-3 * (1 - 0.01 * speed[0])))
                 
@@ -258,8 +258,8 @@ class MyWindow(Ui_MainWindow):
                 self.tdDen = [1, -p1]
                 
             elif modelFunc == 6:
-                self.tdNum = self.textCapture(4)
-                self.tdDen = self.textCapture(5)
+                self.tdNum = self.__textCapture(4)
+                self.tdDen = self.__textCapture(5)
                 
             elif modelFunc == -1:
                 # TODO: Error flag
@@ -302,8 +302,8 @@ class MyWindow(Ui_MainWindow):
                 
             ##############################################################################################
             elif controlClass == 11:                                                            # Custom
-                controllerNumTemp, numNum = self.customControllerSetter(0)
-                controllerDenTemp, numDen = self.customControllerSetter(1)
+                controllerNumTemp, numNum = self.__customControllerSetter(0)
+                controllerDenTemp, numDen = self.__customControllerSetter(1)
                 # TODO: flag que impede sequencia se o len de cada for diferente
                 
                 contNum = len(controllerNumTemp)
@@ -357,8 +357,8 @@ class MyWindow(Ui_MainWindow):
                 filterDen = denL[0][0]
                 
             elif filterType == 14:  # Filtro Custom
-                filterNum = self.textCapture(6)
-                filterDen = self.textCapture(7)
+                filterNum = self.__textCapture(6)
+                filterDen = self.__textCapture(7)
                 
             elif filterType == -1:
                 # TODO: Error flag
@@ -464,9 +464,9 @@ class MyWindow(Ui_MainWindow):
         else:
             texto = "Adicione um conjunto de dados."
             self.controllerOutput.setPlainText(texto)
-
+    
     ## Botao para gerar o grafico de T(z)
-    def graphTzPressed(self):
+    def __graphTzPressed(self):
         
         lw = 1.5 # linewidth
         
@@ -488,7 +488,7 @@ class MyWindow(Ui_MainWindow):
             else:
                 case = 3
         
-        # Printar somente a Td
+        # Printar somente a Td desejada
         if case == 1:
             num = self.dfEnsaio.shape[0]
             
@@ -514,9 +514,16 @@ class MyWindow(Ui_MainWindow):
             #     yd[y] = yd[y] / inputMax
 
             # plot da resposta ao salto para o sinal da Td desejada
-            plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="Td_Desejada")
+            plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="Td Desejada")
+            plt.plot(entradaEnsaio, "r", drawstyle="steps", linewidth=lw, label="Entrada")
+            plt.grid(True)
+            plt.xlabel("tempo (amostras)")
+            plt.xlim(left=-2, right=num)
+            plt.legend()
+            plt.tight_layout()
             
-        # Printar somente a malha fechada
+        
+        # Printar somente dados da malha fechada
         elif case == 2:
             num = self.dfEnsaioMF.shape[0]
             
@@ -537,40 +544,26 @@ class MyWindow(Ui_MainWindow):
             # for y in range(0, num):
             #     saidaMF[y] = saidaMF[y] / inputMax
                 
-            plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
+            plt.plot(entradaMF, "r", drawstyle="steps", linewidth=lw, label="Entrada")
+            plt.plot(saidaMF, "b", drawstyle="steps", linewidth=lw, label="Malha Fechada")
+            plt.grid(True)
+            plt.xlabel("tempo (amostras)")
+            plt.xlim(left=-2, right=num)
+            plt.legend()
+            plt.tight_layout()
             
         # Printar Td e malha fechada juntas
         elif case == 3:
-            num2 = self.dfEnsaioMF.shape[0]
+            num = self.dfEnsaioMF.shape[0]
             
-            num1 = self.dfEnsaio.shape[0]
-            
-            num = num1 if num1 < num2 else num2
-            
-            # Td Desejada
-            dfEnsaioCopia = self.dfEnsaio.copy()
-            
-            entradaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-            saidaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-            
-            entradaEnsaio = np.ones((num, 1))
-            saidaEnsaio = np.ones((num, 1))
-            
-            for x in range(0, num):
-                entradaEnsaio[x] = entradaTemp[x]
-                saidaEnsaio[x] = saidaTemp[x]
+                
                 
             Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
 
-            yTd = vrft.filter(Td, entradaEnsaio)
             
-            inputMax = np.amax(yTd)
             
-            for y in range(0, num):
-                yTd[y] = yTd[y] / inputMax
-                
             
-            # Malha fechada
+            # Pós VRFT
             dfEnsaioMFCopia = self.dfEnsaioMF.copy()
             
             entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
@@ -583,30 +576,70 @@ class MyWindow(Ui_MainWindow):
                 entradaMF[x] = entradaMFTemp[x]
                 saidaMF[x] = saidaMFTemp[x]
                 
-            inputMax = np.amax(saidaMF)
+            yTd = vrft.filter(Td, entradaMF)
+            
+            yTd = yTd[2000 : num]
+            saidaMF = saidaMF[2000 : num]
+            entradaMF = entradaMF[2000 : num]
+            
+            print(entradaMF.shape)
+            print(np.amax(yTd))
+            print(np.amin(yTd))
+            
+            num = num - 2000
+            
+            # TODO: Encapsular o MinMax Scaler
+            # MinMax Scaler
+            maxy = np.amax(yTd)
+            miny = np.amin(yTd)
             
             for y in range(0, num):
-                saidaMF[y] = saidaMF[y] / inputMax
+                yTd[y] = (yTd[y] - miny) / (maxy - miny)
             
-            plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Td_MalhaFechada")
-            plt.plot(yTd, "b", drawstyle="steps", linewidth=lw, label="Td_Desejada")
+            # MinMax Scaler
+            maxMF2 = np.amax(entradaMF)
+            minMF2 = np.amin(entradaMF)
+            
+            for y in range(0, num):
+                entradaMF[y] = (entradaMF[y] - minMF2) / (maxMF2 - minMF2)
+            
+            # MinMax Scaler
+            maxMF = np.amax(saidaMF)
+            minMF = np.amin(saidaMF)
+            
+            for y in range(0, num):
+                saidaMF[y] = (saidaMF[y] - minMF) / (maxMF - minMF)
+            
+            #plot 1:
+            plt.subplot(2, 1, 1)
+            plt.plot(entradaMF, "b", drawstyle="steps", linewidth=lw, label="Entrada Malha Fechada")
+            plt.plot(yTd, "r", drawstyle="steps", linewidth=lw, label="Saida Td desejada")
+            plt.grid(True)
+            plt.legend()
+            
+            #plot 2:
+            plt.subplot(2, 1, 2)
+            plt.plot(entradaMF, "g", drawstyle="steps", linewidth=lw, label="Entrada Malha Fechada")
+            plt.plot(saidaMF, "y", drawstyle="steps", linewidth=lw, label="Saida Malha Fechada")
+            plt.grid(True)
+            plt.legend()
+            plt.xlabel("tempo (amostras)")
+            plt.tight_layout()
+            
+            # plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Pos VRFT")
+            # plt.plot(saidaEnsaio, "b", drawstyle="steps", linewidth=lw, label="Pre VRFT")
         
         elif case == 0:
             texto = "Adicione um ensaio de malha fechada ou aplique o método VRFT primeiro."
             self.MFOutput.setPlainText(texto)
         
         if case > 0:
-            plt.grid(True)
-            plt.xlabel("time (samples)")
-            plt.ylabel("Td")
-            plt.xlim(left=-2, right=num)
-            plt.legend()
             plt.show()
         
     
     # TODO:
     ## Botao para gerar o custo JVR
-    def JVRPressed(self):
+    def __JVRPressed(self):
         
         lw = 1.5 # linewidth
         count1 = False
@@ -637,6 +670,18 @@ class MyWindow(Ui_MainWindow):
 
             yTd = vrft.filter(Td, entradaMF)
             
+            maxEnsaio = np.amax(yTd)
+            minEnsaio = np.amin(yTd)
+            
+            for y in range(0, num):
+                yTd[y] = (yTd[y] - minEnsaio) / (maxEnsaio - minEnsaio)
+                
+            maxMF = np.amax(saidaMF)
+            minMF = np.amin(saidaMF)
+            
+            for y in range(0, num):
+                saidaMF[y] = (saidaMF[y] - minMF) / (maxMF - minMF)
+            
             soma = 0
             
             for i in range(num):
@@ -655,7 +700,7 @@ class MyWindow(Ui_MainWindow):
 
     # TODO:
     ## Botao para calcular a sensibilidade
-    def sensiPressed(self):
+    def __sensiPressed(self):
         
         if self.flag == True:
             '''
@@ -745,7 +790,7 @@ class MyWindow(Ui_MainWindow):
     # appendPlainText - insere o texto passado como argumento apos o texto presente sem apagar o texto antigo, adiciona uma nova linha automatica
     
     ## Botao para buscar planilha com os dados do ensaio da planta
-    def getFile(self):
+    def __getFile(self):
         file_filter = 'Data File (*.xlsx *.csv);; Excel File (*.xlsx *.xls)'
         response = QFileDialog.getOpenFileName(
             parent=self,
@@ -761,8 +806,8 @@ class MyWindow(Ui_MainWindow):
             df = pd.read_excel(response[0])
         return df, response[0]
             
-    def ensaioPressed(self):
-        self.dfEnsaio, address = self.getFile()
+    def __ensaioPressed(self):
+        self.dfEnsaio, address = self.__getFile()
         if address != False:
             self.ensaioText.setText(address)
             texto = "Dados de ensaio carregados. Numero de pares entrada-saida amostrados: " + str(self.dfEnsaio.shape[0])
@@ -770,16 +815,16 @@ class MyWindow(Ui_MainWindow):
         # TODO: if address == False
     
     ## Botao para buscar planilha com os dadosdo ensaio da variavel instrumentavel da planta
-    def ivPressed(self):
-        self.dfIV, address = self.getFile()
+    def __ivPressed(self):
+        self.dfIV, address = self.__getFile()
         if address != False:
             self.ivText.setText(address)
             texto = "Dados da variavel instrumentavel carregados. Numero de pares entrada-saida amostrados: " + str(self.dfIV.shape[0])
             self.controllerOutput.appendPlainText(texto)
     
     ## Botao para buscar planilha com os dados do ensaio em malha fechada da planta
-    def ensaioMFPressed(self):
-        self.dfEnsaioMF, address = self.getFile()
+    def __ensaioMFPressed(self):
+        self.dfEnsaioMF, address = self.__getFile()
         if address != False:
             self.ensaioMFText.setText(address)
             texto = "Dados de ensaio em malha fechada carregados. Numero de pares entrada-saida amostrados: " + str(self.dfEnsaioMF.shape[0])
