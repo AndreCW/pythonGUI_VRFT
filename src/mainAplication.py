@@ -468,7 +468,7 @@ class MyWindow(Ui_MainWindow):
     ## Botao para gerar o grafico de T(z)
     def __graphTzPressed(self):
         
-        lw = 1.5 # linewidth
+        lw = 1 # linewidth
         
         case = 0
         
@@ -514,8 +514,8 @@ class MyWindow(Ui_MainWindow):
             #     yd[y] = yd[y] / inputMax
 
             # plot da resposta ao salto para o sinal da Td desejada
-            plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="Td Desejada")
-            plt.plot(entradaEnsaio, "r", drawstyle="steps", linewidth=lw, label="Entrada")
+            plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="Td Desejada - Tensão [V]]")
+            plt.plot(entradaEnsaio, "r", drawstyle="steps", linewidth=lw, label="Entrada - Duty Cicle")
             plt.grid(True)
             plt.xlabel("tempo (amostras)")
             plt.xlim(left=-2, right=num)
@@ -545,9 +545,10 @@ class MyWindow(Ui_MainWindow):
             #     saidaMF[y] = saidaMF[y] / inputMax
                 
             plt.plot(entradaMF, "r", drawstyle="steps", linewidth=lw, label="Entrada")
-            plt.plot(saidaMF, "b", drawstyle="steps", linewidth=lw, label="Malha Fechada")
+            plt.plot(saidaMF, "b", drawstyle="steps", linewidth=lw, label="Saida")
             plt.grid(True)
             plt.xlabel("tempo (amostras)")
+            plt.ylabel("Tensao [V]")
             plt.xlim(left=-2, right=num)
             plt.legend()
             plt.tight_layout()
@@ -556,13 +557,8 @@ class MyWindow(Ui_MainWindow):
         elif case == 3:
             num = self.dfEnsaioMF.shape[0]
             
-                
-                
             Td = signal.TransferFunction(self.tdNum, self.tdDen, dt=1)
 
-            
-            
-            
             # Pós VRFT
             dfEnsaioMFCopia = self.dfEnsaioMF.copy()
             
@@ -578,15 +574,17 @@ class MyWindow(Ui_MainWindow):
                 
             yTd = vrft.filter(Td, entradaMF)
             
-            yTd = yTd[2000 : num]
-            saidaMF = saidaMF[2000 : num]
-            entradaMF = entradaMF[2000 : num]
+            # Remove os dados que influenciam na escala dos sianis
+            minimo = np.amin(entradaMF) if np.amin(entradaMF) <= np.amin(saidaMF) else np.amin(saidaMF)
             
-            print(entradaMF.shape)
-            print(np.amax(yTd))
-            print(np.amin(yTd))
+            where = np.where(yTd >= minimo)
+            index = where[0][0]
             
-            num = num - 2000
+            yTd = yTd[index : num]
+            saidaMF = saidaMF[index : num]
+            entradaMF = entradaMF[index : num]
+            
+            num = num - index
             
             # TODO: Encapsular o MinMax Scaler
             # MinMax Scaler
@@ -615,6 +613,7 @@ class MyWindow(Ui_MainWindow):
             plt.plot(entradaMF, "b", drawstyle="steps", linewidth=lw, label="Entrada Malha Fechada")
             plt.plot(yTd, "r", drawstyle="steps", linewidth=lw, label="Saida Td desejada")
             plt.grid(True)
+            plt.ylabel("Tensao [V]")
             plt.legend()
             
             #plot 2:
@@ -624,6 +623,7 @@ class MyWindow(Ui_MainWindow):
             plt.grid(True)
             plt.legend()
             plt.xlabel("tempo (amostras)")
+            plt.ylabel("Tensao [V]")
             plt.tight_layout()
             
             # plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Pos VRFT")
@@ -641,7 +641,6 @@ class MyWindow(Ui_MainWindow):
     ## Botao para gerar o custo JVR
     def __JVRPressed(self):
         
-        lw = 1.5 # linewidth
         count1 = False
         count2 = False
         
