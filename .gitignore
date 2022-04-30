@@ -1,6 +1,3 @@
-TestTools/plotTesting.py
-TestTools/graphical.ui
-TestTools/window.py
 .vscode/launch.json
 src/output.py
 src/tdPadraoPolos.xlsx
@@ -22,3 +19,4 @@ Datasets/dadosControlador1.xlsx
 Datasets/dadosControlador2.xlsx
 Datasets/dadosControlador3.xlsx
 Datasets/dadosControlador4.xlsx
+.vrftVenv
