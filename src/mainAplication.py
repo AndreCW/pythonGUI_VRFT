@@ -245,10 +245,6 @@ class MyWindow(Ui_MainWindow):
 
                 p1 = math.exp(-(4 / freq[0]) / (tso[0] * 10 ** -3 * (1 - 0.01 * speed[0])))
 
-                '''
-                Td para caso não flexível
-                Td = (1 - p1) / (z - p1)
-                '''
                 self.modelNum = [1 - p1]
                 self.modelDen = [1, -p1]
 
@@ -496,11 +492,8 @@ class MyWindow(Ui_MainWindow):
 
     ## Botao para gerar o grafico de T(z)
     def graphTzPressed(self):
-
         lw = 1  # linewidth
-
         case = 0
-
         count1 = False
         count2 = False
 
@@ -517,7 +510,7 @@ class MyWindow(Ui_MainWindow):
             else:
                 case = 3
 
-        # Printar somente dados da malha fechada
+        # Gráfico dados da malha fechada
         if case == 2:
             num = self.dfEnsaioMF.shape[0]
 
@@ -542,7 +535,7 @@ class MyWindow(Ui_MainWindow):
             plt.legend()
             plt.tight_layout()
 
-        # Printar Td e malha fechada juntas
+        # Gráfico Td e malha fechada juntas
         elif case == 3:
             num = self.dfEnsaioMF.shape[0]
 
@@ -767,7 +760,7 @@ class MyWindow(Ui_MainWindow):
         self.dfEnsaio, address = self.getFile()
         if address:
             self.ensaioText.setText(address)
-            texto = "Dados de ensaio carregados. Numero de pares entrada-saida amostrados: " + str(
+            texto = "Dados de ensaio carregados. Numero de amostras dos sinais carregados: " + str(
                 self.dfEnsaio.shape[0])
             self.controllerOutput.setPlainText(texto)
         # TODO: if address == False
@@ -777,7 +770,7 @@ class MyWindow(Ui_MainWindow):
         self.dfIV, address = self.getFile()
         if address:
             self.ivText.setText(address)
-            texto = "Dados da variavel instrumentavel carregados. Numero de pares entrada-saida amostrados: " + str(
+            texto = "Dados da variavel instrumentavel carregados. Numero de amostras dos sinais carregados: " + str(
                 self.dfIV.shape[0])
             self.controllerOutput.appendPlainText(texto)
 
@@ -786,7 +779,7 @@ class MyWindow(Ui_MainWindow):
         self.dfEnsaioMF, address = self.getFile()
         if address:
             self.ensaioMFText.setText(address)
-            texto = "Dados de ensaio em malha fechada carregados. Numero de pares entrada-saida amostrados: " + str(
+            texto = "Dados de ensaio em malha fechada carregados. Numero de amostras dos sinais carregados: " + str(
                 self.dfEnsaioMF.shape[0])
             self.MFOutput.appendPlainText(texto)
 
