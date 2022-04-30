@@ -75,24 +75,24 @@ class MyWindow(Ui_MainWindow):
         self.gPre.setId(self.bSepic, 18)
 
         ## Chamada das funções para quando algum botao for pressionado
-        self.gTd.buttonClicked.connect(self.__TdPressed)
-        self.gControlador.buttonClicked.connect(self.__CPressed)
-        self.gFiltro.buttonClicked.connect(self.__filterPressed)
+        self.gTd.buttonClicked.connect(self.TdPressed)
+        self.gControlador.buttonClicked.connect(self.CPressed)
+        self.gFiltro.buttonClicked.connect(self.filterPressed)
 
-        self.bPontoOp.clicked.connect(self.__pontoIdealPressed)
-        self.bVRFT.clicked.connect(self.__VRFTPressed)
-        self.grafTd.clicked.connect(self.__graphTzPressed)
-        self.bJVR.clicked.connect(self.__JVRPressed)
-        self.bSensi.clicked.connect(self.__sensiPressed)
+        self.bPontoOp.clicked.connect(self.pontoIdealPressed)
+        self.bVRFT.clicked.connect(self.VRFTPressed)
+        self.grafTd.clicked.connect(self.graphTzPressed)
+        self.bJVR.clicked.connect(self.JVRPressed)
+        self.bSensi.clicked.connect(self.sensiPressed)
 
-        self.bEnsaio.clicked.connect(self.__ensaioPressed)
-        self.bIV.clicked.connect(self.__ivPressed)
-        self.bEnsaioMF.clicked.connect(self.__ensaioMFPressed)
+        self.bEnsaio.clicked.connect(self.ensaioPressed)
+        self.bIV.clicked.connect(self.ivPressed)
+        self.bEnsaioMF.clicked.connect(self.ensaioMFPressed)
 
     ################################################################
     ## Funções de botoes que foram pressionados
     ## Deixa os campos de escrita do modelo de referencia como read only conforme o botao que foi selecionado
-    def __TdPressed(self):
+    def TdPressed(self):
         pressed = self.gTd.checkedId()
         if pressed == 5:
             self.textAcom.setReadOnly(False)
@@ -106,7 +106,7 @@ class MyWindow(Ui_MainWindow):
             self.TdDen.setReadOnly(False)
 
     ## Deixa o campo de escrita do controlador como read only conforme o botao que foi selecionado
-    def __CPressed(self):
+    def CPressed(self):
         pressed = self.gControlador.checkedId()
         if pressed == 11:
             self.customCNum.setReadOnly(False)
@@ -116,7 +116,7 @@ class MyWindow(Ui_MainWindow):
             self.customCDen.setReadOnly(True)
 
     ## Deixa o campo de escrita do filtro como read only conforme o botao que foi selecionado
-    def __filterPressed(self):
+    def filterPressed(self):
         pressed = self.gFiltro.checkedId()
         if pressed == 14:
             self.fTdNum.setReadOnly(False)
@@ -125,8 +125,8 @@ class MyWindow(Ui_MainWindow):
             self.fTdNum.setReadOnly(True)
             self.fTdDen.setReadOnly(True)
 
-    ## 
-    def __textCapture(self, chave):
+    ## Faz a leitura de cada campo de entrada de texto presente na interface
+    def textCapture(self, chave):
         valor = ""
         if chave == 1:
             valor = self.textAcom.text()
@@ -156,8 +156,8 @@ class MyWindow(Ui_MainWindow):
 
             return floats
 
-    ## 
-    def __customControllerSetter(self, chave):
+    ## Faz a leitura especificamente dos campos de texto do controlador
+    def customControllerSetter(self, chave):
         if chave == 0:
             valor = self.customCNum.text()
         else:
@@ -207,11 +207,10 @@ class MyWindow(Ui_MainWindow):
 
             return valores, fecha
 
-    # TODO: Adicionar trava para quando não for informado todos os dados necessários
     ## Botao para gerar o ponto ideal para coleta de dados    
-    def __pontoIdealPressed(self):
-        duty = self.__textCapture(8)
-        v0 = self.__textCapture(9)
+    def pontoIdealPressed(self):
+        duty = self.textCapture(8)
+        v0 = self.textCapture(9)
 
         controllerType = self.gPre.checkedId()
 
@@ -234,22 +233,15 @@ class MyWindow(Ui_MainWindow):
 
             self.preOutput.append(texto)
 
-    # TODO: Adicionar trava para quando não for informado todos os dados necessários
-    ## Botao para aplicar o metodo VRFT
-    def __VRFTPressed(self):
-        self.flag = False
-
+    def getRef(self):
         if self.ensaioText.text() != '':
 
             modelFunc = self.gTd.checkedId()
 
-            # TODO: Zero de fase nao minima    
-            # zeroFNM = check ZFNM button
-
             if modelFunc == 5:
-                tso = self.__textCapture(1)
-                speed = self.__textCapture(2)
-                freq = self.__textCapture(3)
+                tso = self.textCapture(1)
+                speed = self.textCapture(2)
+                freq = self.textCapture(3)
 
                 p1 = math.exp(-(4 / freq[0]) / (tso[0] * 10 ** -3 * (1 - 0.01 * speed[0])))
 
@@ -261,8 +253,8 @@ class MyWindow(Ui_MainWindow):
                 self.modelDen = [1, -p1]
 
             elif modelFunc == 6:
-                self.modelNum = self.__textCapture(4)
-                self.modelDen = self.__textCapture(5)
+                self.modelNum = self.textCapture(4)
+                self.modelDen = self.textCapture(5)
 
             elif modelFunc == -1:
                 # TODO: Error flag
@@ -271,8 +263,123 @@ class MyWindow(Ui_MainWindow):
 
             objectiveFunction = signal.TransferFunction(self.modelNum, self.modelDen, dt=1)
 
-            # Conforme selecao do usuario, seta o tipo de controlador
-            controlClass = self.gControlador.checkedId()
+            return objectiveFunction
+
+    def getCont(self):
+        # Conforme selecao do usuario, seta o tipo de controlador
+        controlClass = self.gControlador.checkedId()
+
+        pNum = [1]
+        pDen = [1]
+
+        iNum = [1, 0]
+        iDen = [1, -1]
+
+        dNum = [1, -1]
+        dDen = [1, 0]
+
+        if controlClass == 7:  # Proporcional
+            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)]]  # Kp
+            k = "p"
+
+        elif controlClass == 8:  # Proporcional Integral
+            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],  # Kp
+                               [signal.TransferFunction(iNum, iDen, dt=1)], ]  # Ki
+            k = "pi"
+
+        elif controlClass == 9:  # Proporcional Derivativo
+            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],  # Kp
+                               [signal.TransferFunction(dNum, dDen, dt=1)], ]  # Kd
+            k = "pd"
+
+        elif controlClass == 10:  # Proporcional Integral Derivativo
+            controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],  # Kp
+                               [signal.TransferFunction(iNum, iDen, dt=1)],  # Ki
+                               [signal.TransferFunction(dNum, dDen, dt=1)], ]  # Kd
+            k = "pid"
+
+        elif controlClass == 11:  # Custom
+            controllerNumTemp, self.numNum = self.customControllerSetter(0)
+            controllerDenTemp, numDen = self.customControllerSetter(1)
+            # TODO: flag que impede sequencia se o len de cada for diferente
+
+            contNum = len(controllerNumTemp)
+            contDen = len(controllerDenTemp)
+            temp = contNum + contDen
+
+            contador, i, j = 0, 0, 0
+            controllerTemp = []
+
+            # TODO:
+            while contador < temp:
+                if (contador % 2) == 0:
+                    controllerTemp.append(controllerDenTemp[i])
+                    i += 1
+                else:
+                    controllerTemp.append(controllerNumTemp[j])
+                    j += 1
+                contador += 1
+
+            controllerModel = []
+            contador = 1
+
+            while contador < len(controllerTemp):
+                controllerModel.append([signal.TransferFunction(controllerTemp[contador], controllerTemp[contador - 1], dt=1)])
+                contador += 2
+
+            k = "custom"
+
+        elif controlClass == -1:
+            # TODO: Error flag
+            texto = "Modelo do controlador invalido"
+            self.controllerOutput.appendPlainText(texto)
+            controllerModel = 0
+            k = 0
+
+        return controllerModel, k
+
+    def getFilter(self):
+        # Conforme selecao do usuario, seta o tipo de filtro
+        filterType = self.gFiltro.checkedId()
+
+        if filterType == 12:  # Sem Filtro
+            filterNum = [1]
+            filterDen = [1]
+
+        elif filterType == 13:  # Filtro Padrão
+            # L = Td * (1 - Td)
+            um = control.tf([1], [1], dt=1)
+            tTemp = control.tf(self.modelNum, self.modelDen, dt=1)
+            tDesejada = (um - tTemp)
+            tDesejada = tDesejada * tTemp
+
+            numL = tDesejada.num
+            filterNum = numL[0][0]
+            denL = tDesejada.den
+            filterDen = denL[0][0]
+
+        elif filterType == 14:  # Filtro Custom
+            filterNum = self.textCapture(6)
+            filterDen = self.textCapture(7)
+
+        elif filterType == -1:
+            # TODO: Error flag
+            texto = "Modelo de filtro invalido"
+            self.controllerOutput.appendPlainText(texto)
+
+        filterL = signal.TransferFunction(filterNum, filterDen, dt=1)
+
+        return filterL
+
+    # TODO: Adicionar trava para quando não for informado todos os dados necessários
+    ## Botao para aplicar o metodo VRFT
+    def VRFTPressed(self):
+        self.flag = False
+
+        if self.ensaioText.text() != '':
+
+            # Gera o modelo de referência da planta
+            objectiveFunction = self.getRef()
 
             pNum = [1]
             pDen = [1]
@@ -283,93 +390,11 @@ class MyWindow(Ui_MainWindow):
             dNum = [1, -1]
             dDen = [1, 0]
 
-            if controlClass == 7:  # Proporcional
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)]]  # Kp
-                k = "p"
+            # Gera a função do controlador
+            controllerModel, k = self.getCont()
 
-            elif controlClass == 8:  # Proporcional Integral
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],  # Kp
-                                   [signal.TransferFunction(iNum, iDen, dt=1)], ]  # Ki
-                k = "pi"
-
-            elif controlClass == 9:  # Proporcional Derivativo
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],  # Kp
-                                   [signal.TransferFunction(dNum, dDen, dt=1)], ]  # Kd
-                k = "pd"
-
-            elif controlClass == 10:  # Proporcional Integral Derivativo
-                controllerModel = [[signal.TransferFunction(pNum, pDen, dt=1)],  # Kp
-                                   [signal.TransferFunction(iNum, iDen, dt=1)],  # Ki
-                                   [signal.TransferFunction(dNum, dDen, dt=1)], ]  # Kd
-                k = "pid"
-
-            ##############################################################################################
-            elif controlClass == 11:  # Custom
-                controllerNumTemp, numNum = self.__customControllerSetter(0)
-                controllerDenTemp, numDen = self.__customControllerSetter(1)
-                # TODO: flag que impede sequencia se o len de cada for diferente
-
-                contNum = len(controllerNumTemp)
-                contDen = len(controllerDenTemp)
-                temp = contNum + contDen
-
-                contador, i, j = 0, 0, 0
-                controllerTemp = []
-
-                # TODO: Comportamento está povoando controllerTemp invertido, primeiro den depois num. Precisa ser revisto para ficar primeiro num depois den
-                while contador < temp:
-                    if (contador % 2) == 0:
-                        controllerTemp.append(controllerDenTemp[i])
-                        i += 1
-                    else:
-                        controllerTemp.append(controllerNumTemp[j])
-                        j += 1
-                    contador += 1
-
-                controllerModel = []
-                contador = 1
-
-                while contador < len(controllerTemp):
-                    controllerModel.append(
-                        [signal.TransferFunction(controllerTemp[contador], controllerTemp[contador - 1], dt=1)])
-                    contador += 2
-
-                k = "custom"
-
-            elif controlClass == -1:
-                # TODO: Error flag
-                texto = "Modelo do controlador invalido"
-                self.controllerOutput.appendPlainText(texto)
-
-            # Conforme selecao do usuario, seta o tipo de filtro
-            filterType = self.gFiltro.checkedId()
-
-            if filterType == 12:  # Sem Filtro
-                filterNum = [1]
-                filterDen = [1]
-
-            elif filterType == 13:  # Filtro Padrão
-                # L = Td * (1 - Td)
-                um = control.tf([1], [1], dt=1)
-                tTemp = control.tf(self.modelNum, self.modelDen, dt=1)
-                tDesejada = (um - tTemp)
-                tDesejada = tDesejada * tTemp
-
-                numL = tDesejada.num
-                filterNum = numL[0][0]
-                denL = tDesejada.den
-                filterDen = denL[0][0]
-
-            elif filterType == 14:  # Filtro Custom
-                filterNum = self.__textCapture(6)
-                filterDen = self.__textCapture(7)
-
-            elif filterType == -1:
-                # TODO: Error flag
-                texto = "Modelo de filtro invalido"
-                self.controllerOutput.appendPlainText(texto)
-
-            filterL = signal.TransferFunction(filterNum, filterDen, dt=1)
+            # Gera a função do filtro
+            filterL = self.getFilter()
 
             num = self.dfEnsaio.shape[0]
 
@@ -402,66 +427,63 @@ class MyWindow(Ui_MainWindow):
 
             resultado = vrft.design(entradaEnsaio, saidaEnsaio, saidaIV, objectiveFunction, controllerModel, filterL)
 
+            textoaux = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = "
+
+            # Exibe resultados de um controlador P
             if k == "p":
                 ganhos = [resultado[0].item()]
-                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(ganhos[0])
+                texto = textoaux + str(ganhos[0])
                 cNum = [i * ganhos[0] for i in pNum]
                 self.contNum = cNum
                 self.contDen = pDen
                 self.flag = True
 
+            # Exibe resultados de um controlador PI
             elif k == "pi":
                 ganhos = [resultado[0].item(), resultado[1].item()]
-                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(
-                    ganhos[0]) + "\n\tKi = " + str(ganhos[1])
+                texto = textoaux + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1])
                 cNum1 = [i * ganhos[0] for i in pNum]
                 cNum2 = [j * ganhos[1] for j in iNum]
-                c1 = control.tf(cNum1, pDen, dt=1)
-                c2 = control.tf(cNum2, iDen, dt=1)
-                cFinal = c1 + c2
+                cFinal = control.tf(cNum1, pDen, dt=1) + control.tf(cNum2, iDen, dt=1)
                 cAux = cFinal.num
                 self.contNum = cAux
                 cAux = cFinal.den
                 self.contDen = cAux
                 self.flag = True
 
+            # Exibe resultados de um controlador PD
             elif k == "pd":
                 ganhos = [resultado[0].item(), resultado[1].item()]
-                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(
-                    ganhos[0]) + "\n\tKd = " + str(ganhos[1])
+                texto = textoaux + str(ganhos[0]) + "\n\tKd = " + str(ganhos[1])
                 cNum1 = [i * ganhos[0] for i in pNum]
                 cNum2 = [i * ganhos[1] for i in dNum]
-                c1 = control.tf(cNum1, pDen, dt=1)
-                c2 = control.tf(cNum2, dDen, dt=1)
-                cFinal = c1 + c2
+                cFinal = control.tf(cNum1, pDen, dt=1) + control.tf(cNum2, dDen, dt=1)
                 cAux = cFinal.num
                 self.contNum = cAux
                 cAux = cFinal.den
                 self.contDen = cAux
                 self.flag = True
 
+            # Exibe resultados de um controlador PID
             elif k == "pid":
                 ganhos = [resultado[0].item(), resultado[1].item(), resultado[2].item()]
-                texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\tKp = " + str(
-                    ganhos[0]) + "\n\tKi = " + str(ganhos[1]) + "\n\tKd = " + str(ganhos[2])
+                texto = textoaux + str(ganhos[0]) + "\n\tKi = " + str(ganhos[1]) + "\n\tKd = " + str(ganhos[2])
                 cNum1 = [i * ganhos[0] for i in pNum]
                 cNum2 = [i * ganhos[1] for i in iNum]
                 cNum3 = [i * ganhos[2] for i in dNum]
-                c1 = control.tf(cNum1, pDen, dt=1)
-                c2 = control.tf(cNum2, iDen, dt=1)
-                c3 = control.tf(cNum3, dDen, dt=1)
-                cFinal = c1 + c2 + c3
+                cFinal = control.tf(cNum1, pDen, dt=1) + control.tf(cNum2, iDen, dt=1) + control.tf(cNum3, dDen, dt=1)
                 cAux = cFinal.num
                 self.contNum = cAux
                 cAux = cFinal.den
                 self.contDen = cAux
                 self.flag = True
 
+            # Exibe resultados de um controlador customizado
             elif k == "custom":
-                ganhos = [resultado[x].item() for x in range(numNum)]
+                ganhos = [resultado[x].item() for x in range(self.numNum)]
                 texto = "Parâmetros gerados para o tipo de controlador escolhido: \n\t"
                 textoaux = ""
-                for y in range(numNum):
+                for y in range(self.numNum):
                     textoaux = textoaux + "K" + str(y + 1) + " = " + str(ganhos[y]) + "\n\t"
                 texto = texto + textoaux
                 self.flag = True
@@ -473,7 +495,7 @@ class MyWindow(Ui_MainWindow):
             self.controllerOutput.setPlainText(texto)
 
     ## Botao para gerar o grafico de T(z)
-    def __graphTzPressed(self):
+    def graphTzPressed(self):
 
         lw = 1  # linewidth
 
@@ -495,43 +517,8 @@ class MyWindow(Ui_MainWindow):
             else:
                 case = 3
 
-        # Printar somente a Td desejada
-        if case == 1:
-            num = self.dfEnsaio.shape[0]
-
-            dfEnsaioCopia = self.dfEnsaio.copy()
-
-            entradaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-            saidaTemp = dfEnsaioCopia.pop(dfEnsaioCopia.columns[0]).to_numpy()
-
-            entradaEnsaio = np.ones((num, 1))
-            saidaEnsaio = np.ones((num, 1))
-
-            for x in range(0, num):
-                entradaEnsaio[x] = entradaTemp[x]
-                saidaEnsaio[x] = saidaTemp[x]
-
-            Td = signal.TransferFunction(self.modelNum, self.modelDen, dt=1)
-
-            yd = vrft.filter(Td, entradaEnsaio)
-
-            # inputMax = np.amax(yd)
-
-            # for y in range(0, num):
-            #     yd[y] = yd[y] / inputMax
-
-            # plot da resposta ao salto para o sinal da Td desejada
-            plt.plot(yd, "b", drawstyle="steps", linewidth=lw, label="Td Desejada - Tensão [V]]")
-            plt.plot(entradaEnsaio, "r", drawstyle="steps", linewidth=lw, label="Entrada - Duty Cicle")
-            plt.grid(True)
-            plt.xlabel("tempo (amostras)")
-            plt.xlim(left=-2, right=num)
-            plt.legend()
-            plt.tight_layout()
-
-
         # Printar somente dados da malha fechada
-        elif case == 2:
+        if case == 2:
             num = self.dfEnsaioMF.shape[0]
 
             dfEnsaioMFCopia = self.dfEnsaioMF.copy()
@@ -545,11 +532,6 @@ class MyWindow(Ui_MainWindow):
             for x in range(0, num):
                 entradaMF[x] = entradaMFTemp[x]
                 saidaMF[x] = saidaMFTemp[x]
-
-            # inputMax = np.amax(saidaMF)
-
-            # for y in range(0, num):
-            #     saidaMF[y] = saidaMF[y] / inputMax
 
             plt.plot(entradaMF, "r", drawstyle="steps", linewidth=lw, label="Entrada")
             plt.plot(saidaMF, "b", drawstyle="steps", linewidth=lw, label="Saida")
@@ -566,7 +548,7 @@ class MyWindow(Ui_MainWindow):
 
             Td = signal.TransferFunction(self.modelNum, self.modelDen, dt=1)
 
-            # Pós VRFT
+            # Dados Ensaio Malha Fechada
             dfEnsaioMFCopia = self.dfEnsaioMF.copy()
 
             entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
@@ -591,30 +573,6 @@ class MyWindow(Ui_MainWindow):
             saidaMF = saidaMF[index: num]
             entradaMF = entradaMF[index: num]
 
-            num = num - index
-
-            # TODO: Encapsular o MinMax Scaler
-            # MinMax Scaler
-            # maxy = np.amax(yTd)
-            # miny = np.amin(yTd)
-            #
-            # for y in range(0, num):
-            #     yTd[y] = (yTd[y] - miny) / (maxy - miny)
-            #
-            # # MinMax Scaler
-            # maxMF2 = np.amax(entradaMF)
-            # minMF2 = np.amin(entradaMF)
-            #
-            # for y in range(0, num):
-            #     entradaMF[y] = (entradaMF[y] - minMF2) / (maxMF2 - minMF2)
-            #
-            # # MinMax Scaler
-            # maxMF = np.amax(saidaMF)
-            # minMF = np.amin(saidaMF)
-            #
-            # for y in range(0, num):
-            #     saidaMF[y] = (saidaMF[y] - minMF) / (maxMF - minMF)
-
             # plot 1:
             plt.subplot(2, 1, 1)
             plt.plot(entradaMF, "b", drawstyle="steps", linewidth=lw, label="Entrada Malha Fechada")
@@ -633,11 +591,8 @@ class MyWindow(Ui_MainWindow):
             plt.ylabel("Tensao [V]")
             plt.tight_layout()
 
-            # plt.plot(saidaMF, "r", drawstyle="steps", linewidth=lw, label="Pos VRFT")
-            # plt.plot(saidaEnsaio, "b", drawstyle="steps", linewidth=lw, label="Pre VRFT")
-
-        elif case == 0:
-            texto = "Adicione um ensaio de malha fechada ou aplique o método VRFT primeiro."
+        elif case <= 1:
+            texto = "Adicione um ensaio de malha fechada e aplique o método VRFT primeiro."
             self.MFOutput.setPlainText(texto)
 
         if case > 0:
@@ -645,7 +600,7 @@ class MyWindow(Ui_MainWindow):
 
     # TODO:
     ## Botao para gerar o custo JVR
-    def __JVRPressed(self):
+    def JVRPressed(self):
 
         count1 = False
         count2 = False
@@ -704,7 +659,7 @@ class MyWindow(Ui_MainWindow):
 
     # TODO:
     ## Botao para calcular a sensibilidade
-    def __sensiPressed(self):
+    def sensiPressed(self):
 
         if self.flag:
             '''
@@ -792,7 +747,7 @@ class MyWindow(Ui_MainWindow):
     # appendPlainText - insere o texto passado como argumento apos o texto presente sem apagar o texto antigo, adiciona uma nova linha automatica
 
     ## Botao para buscar planilha com os dados do ensaio da planta
-    def __getFile(self):
+    def getFile(self):
         file_filter = 'Data File (*.xlsx *.csv);; Excel File (*.xlsx *.xls)'
         response = QFileDialog.getOpenFileName(
             parent=self,
@@ -808,8 +763,8 @@ class MyWindow(Ui_MainWindow):
             df = pd.read_excel(response[0])
         return df, response[0]
 
-    def __ensaioPressed(self):
-        self.dfEnsaio, address = self.__getFile()
+    def ensaioPressed(self):
+        self.dfEnsaio, address = self.getFile()
         if address:
             self.ensaioText.setText(address)
             texto = "Dados de ensaio carregados. Numero de pares entrada-saida amostrados: " + str(
@@ -818,8 +773,8 @@ class MyWindow(Ui_MainWindow):
         # TODO: if address == False
 
     ## Botao para buscar planilha com os dadosdo ensaio da variavel instrumentavel da planta
-    def __ivPressed(self):
-        self.dfIV, address = self.__getFile()
+    def ivPressed(self):
+        self.dfIV, address = self.getFile()
         if address:
             self.ivText.setText(address)
             texto = "Dados da variavel instrumentavel carregados. Numero de pares entrada-saida amostrados: " + str(
@@ -827,8 +782,8 @@ class MyWindow(Ui_MainWindow):
             self.controllerOutput.appendPlainText(texto)
 
     ## Botao para buscar planilha com os dados do ensaio em malha fechada da planta
-    def __ensaioMFPressed(self):
-        self.dfEnsaioMF, address = self.__getFile()
+    def ensaioMFPressed(self):
+        self.dfEnsaioMF, address = self.getFile()
         if address:
             self.ensaioMFText.setText(address)
             texto = "Dados de ensaio em malha fechada carregados. Numero de pares entrada-saida amostrados: " + str(
