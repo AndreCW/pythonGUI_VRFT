@@ -14,3 +14,11 @@ Data_closedloop.csv
 src/~$tdPadraoPolos.xlsx
 src/input.ui
 src/__pycache__/guiPrincipal.cpython-310.pyc
+Datasets/Controlador1MF.xlsx
+Datasets/Controlador2MF.xlsx
+Datasets/Controlador3MF.xlsx
+Datasets/Controlador4MF.xlsx
+Datasets/dadosControlador1.xlsx
+Datasets/dadosControlador2.xlsx
+Datasets/dadosControlador3.xlsx
+Datasets/dadosControlador4.xlsx
