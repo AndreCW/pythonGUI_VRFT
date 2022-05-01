@@ -681,7 +681,7 @@ class Ui_MainWindow(QMainWindow):
         self.labelTso_2.setStatusTip(_translate("MainWindow", "Função de transferência obtivo padrão"))
         self.labelTso_2.setText(_translate("MainWindow", "[ms]"))
         self.labelRapido.setStatusTip(_translate("MainWindow", "Função de transferência obtivo padrão"))
-        self.labelRapido.setText(_translate("MainWindow", "% mais rápido"))
+        self.labelRapido.setText(_translate("MainWindow", "x% mais rápido"))
         self.textSpeed.setToolTip(_translate("MainWindow", "Valores de [0, 100)"))
         self.textSpeed.setStatusTip(_translate("MainWindow", "Velocidade relativa desajada"))
         self.labelRapido_4.setStatusTip(_translate("MainWindow", "Função de transferência obtivo padrão"))
