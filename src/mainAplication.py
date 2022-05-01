@@ -171,7 +171,7 @@ class MyWindow(Ui_MainWindow):
                 j += 1
         if i != j:
             # TODO: Error flag
-            texto = "Modelo de controaldor invalido"
+            texto = "Modelo de controlador invalido"
             self.controllerOutput.appendPlainText(texto)
         else:
             valores = []
@@ -510,49 +510,35 @@ class MyWindow(Ui_MainWindow):
             else:
                 case = 3
 
+        num = self.dfEnsaioMF.shape[0]
+
+        dfEnsaioMFCopia = self.dfEnsaioMF.copy()
+
+        entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+        saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
+
+        entradaMF = np.ones((num, 1))
+        saidaMF = np.ones((num, 1))
+
+        for x in range(0, num):
+            entradaMF[x] = entradaMFTemp[x]
+            saidaMF[x] = saidaMFTemp[x]
+
         # Gráfico dados da malha fechada
         if case == 2:
-            num = self.dfEnsaioMF.shape[0]
-
-            dfEnsaioMFCopia = self.dfEnsaioMF.copy()
-
-            entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
-            saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
-
-            entradaMF = np.ones((num, 1))
-            saidaMF = np.ones((num, 1))
-
-            for x in range(0, num):
-                entradaMF[x] = entradaMFTemp[x]
-                saidaMF[x] = saidaMFTemp[x]
 
             plt.plot(entradaMF, "r", drawstyle="steps", linewidth=lw, label="Entrada")
             plt.plot(saidaMF, "b", drawstyle="steps", linewidth=lw, label="Saida")
             plt.grid(True)
             plt.xlabel("tempo (amostras)")
             plt.ylabel("Tensao [V]")
-            plt.xlim(left=-2, right=num)
             plt.legend()
             plt.tight_layout()
 
         # Gráfico Td e malha fechada juntas
         elif case == 3:
-            num = self.dfEnsaioMF.shape[0]
 
             Td = signal.TransferFunction(self.modelNum, self.modelDen, dt=1)
-
-            # Dados Ensaio Malha Fechada
-            dfEnsaioMFCopia = self.dfEnsaioMF.copy()
-
-            entradaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
-            saidaMFTemp = dfEnsaioMFCopia.pop(dfEnsaioMFCopia.columns[0]).to_numpy()
-
-            entradaMF = np.ones((num, 1))
-            saidaMF = np.ones((num, 1))
-
-            for x in range(0, num):
-                entradaMF[x] = entradaMFTemp[x]
-                saidaMF[x] = saidaMFTemp[x]
 
             yTd = vrft.filter(Td, entradaMF)
 
@@ -603,7 +589,7 @@ class MyWindow(Ui_MainWindow):
         if self.ensaioMFText.text() != '':
             count2 = True
 
-        if count1 == True and count2 == True:
+        if count1 is True and count2 is True:
 
             num = self.dfEnsaioMF.shape[0]
 
@@ -742,12 +728,11 @@ class MyWindow(Ui_MainWindow):
     ## Botao para buscar planilha com os dados do ensaio da planta
     def getFile(self):
         file_filter = 'Data File (*.xlsx *.csv);; Excel File (*.xlsx *.xls)'
-        response = QFileDialog.getOpenFileName(
-            parent=self,
-            caption='Select a data file',
-            directory=os.getcwd(),
-            filter=file_filter,
-            initialFilter='Data File (*.xlsx *.csv)')
+        response = QFileDialog.getOpenFileName(parent=self,
+                                                caption='Select a data file',
+                                                directory=os.getcwd(),
+                                                filter=file_filter,
+                                                initialFilter='Data File (*.xlsx *.csv)')
         if response[0] == '':
             return False
         elif response[0][-1] == 'v':
